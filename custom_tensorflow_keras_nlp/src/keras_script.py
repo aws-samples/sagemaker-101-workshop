@@ -30,6 +30,7 @@ def load_testing_data(base_dir):
 def load_embeddings(base_dir):
     embedding_matrix = np.load( os.path.join(base_dir, 'docs-embedding-matrix.npy'))
     return embedding_matrix
+
 # Acquire hyperparameters and directory locations passed by SageMaker
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -38,26 +39,24 @@ def parse_args():
     parser.add_argument('--epochs', type=int, default=1)
     parser.add_argument('--vocab_size', type=int, default=300)
     parser.add_argument('--num_classes', type=int, default=4)
-    
+
     # Data, model, and output directories
     parser.add_argument('--output-data-dir', type=str, default=os.environ['SM_OUTPUT_DATA_DIR'])
     parser.add_argument('--model-dir', type=str, default=os.environ['SM_MODEL_DIR'])
     parser.add_argument('--train', type=str, default=os.environ['SM_CHANNEL_TRAIN'])
     parser.add_argument('--test', type=str, default=os.environ['SM_CHANNEL_TEST'])
     parser.add_argument('--embeddings', type=str, default=os.environ['SM_CHANNEL_EMBEDDINGS'])
-    
+
     return parser.parse_known_args()
 
 if __name__ == "__main__":
-    
     args, unknown = parse_args()
-    
     print(args)
 
     x_train, y_train = load_training_data(args.train)
     x_test, y_test = load_testing_data(args.test)
     embedding_matrix=load_embeddings(args.embeddings)
-    
+
     model = Sequential()
     model.add(Embedding(args.vocab_size, 100, 
                             weights=[embedding_matrix],
@@ -80,16 +79,15 @@ if __name__ == "__main__":
                         activation='softmax',
                         name="out_1"))
 
-        # compile the model
+    # compile the model
     model.compile(optimizer='rmsprop',
                       loss='binary_crossentropy',
                       metrics=['acc'])
 
-
     model.summary()
 
-
     model.fit(x_train, y_train, batch_size=16, epochs=args.epochs, verbose=2)
+    # TODO: Better differentiate train vs val loss in logs
     model.evaluate(x_test, y_test, verbose=2)
     print('------ save model to {}'.format(os.path.join(args.model_dir, 'model/1/')))
     # save Keras model for Tensorflow Serving
@@ -99,5 +97,3 @@ if __name__ == "__main__":
         os.path.join(args.model_dir, 'model/1'),
         inputs={'inputs': model.input},
         outputs={t.name: t for t in model.outputs})
-    
-    
