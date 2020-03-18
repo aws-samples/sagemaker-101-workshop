@@ -5,8 +5,8 @@ import os
 # External Dependencies:
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv1D, Dense, Dropout, Embedding, Flatten, MaxPooling1D
+from tensorflow.keras.models import Sequential
 
 
 def load_training_data(base_dir):
@@ -29,7 +29,7 @@ def parse_args():
 
     # Hyperparameters sent by the client are passed as command-line arguments to the script.
     parser.add_argument("--epochs", type=int, default=1)
-    parser.add_argument("--learning_rate", type=float, default=1e-3)
+    parser.add_argument("--learning_rate", type=float, default=0.001)
     parser.add_argument("--num_classes", type=int, default=4)
     parser.add_argument("--vocab_size", type=int, default=300)
 
@@ -46,9 +46,9 @@ if __name__ == "__main__":
     args, unknown = parse_args()
     print(args)
 
-    x_train, y_train = load_training_data(args.train)
-    x_test, y_test = load_testing_data(args.test)
-    embedding_matrix=load_embeddings(args.embeddings)
+    X_train, y_train = load_training_data(args.train)
+    X_test, y_test = load_testing_data(args.test)
+    embedding_matrix = load_embeddings(args.embeddings)
 
     model = Sequential()
     model.add(Embedding(
@@ -73,16 +73,17 @@ if __name__ == "__main__":
     model.summary()
 
     print("Training model")
-    model.fit(x_train, y_train, batch_size=16, epochs=args.epochs, verbose=2)
+    model.fit(X_train, y_train, batch_size=16, epochs=args.epochs, verbose=2)
     print("Evaluating model")
     # TODO: Better differentiate train vs val loss in logs
-    losses = model.evaluate(x_test, y_test, verbose=2)
+    scores = model.evaluate(X_test, y_test, verbose=2)
     print(
         "Validation results: "
         + "; ".join(map(
-            lambda i: f"{model.metrics_names[i]}={losses[i]:.5f}", range(len(model.metrics_names))
+            lambda i: f"{model.metrics_names[i]}={scores[i]:.5f}", range(len(model.metrics_names))
         ))
     )
+
     print(f"------ save model to {os.path.join(args.model_dir, 'model/1/')}")
     # save Keras model for Tensorflow Serving
     sess = tf.keras.backend.get_session()
