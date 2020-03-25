@@ -44,17 +44,17 @@ def parse_args():
 
 ###### Main application  ###########
 if __name__ == "__main__":
-    
+
     ###### Parse input arguments ############
     args, unknown = parse_args()
     print(args)
-    
+
     ###### Load Data from input channels #################
     X_train, y_train = load_training_data(args.train)
     X_test, y_test = load_testing_data(args.test)
     embedding_matrix = load_embeddings(args.embeddings)
-    
-    
+
+
     ####### Setup model architecture #############
     model = Sequential()
     model.add(Embedding(
@@ -89,12 +89,11 @@ if __name__ == "__main__":
             lambda i: f"{model.metrics_names[i]}={scores[i]:.5f}", range(len(model.metrics_names))
         ))
     )
-    
-         
-          
+
+
     ######### save Keras model for Tensorflow Serving ############
     print(f"------ save model to {os.path.join(args.model_dir, 'model/1/')}")
-          
+
     sess = tf.keras.backend.get_session()
     tf.saved_model.simple_save(
         sess,
