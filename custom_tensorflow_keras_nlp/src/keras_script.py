@@ -1,3 +1,5 @@
+"""CNN-based text classification on SageMaker with TensorFlow and Keras"""
+
 # Python Built-Ins:
 import argparse
 import os
@@ -8,7 +10,7 @@ import tensorflow as tf
 from tensorflow.keras.layers import Conv1D, Dense, Dropout, Embedding, Flatten, MaxPooling1D
 from tensorflow.keras.models import Sequential
 
-##### Helper functions ##########
+###### Helper functions ############
 def load_training_data(base_dir):
     X_train = np.load(os.path.join(base_dir, "train_X.npy"))
     y_train = np.load(os.path.join(base_dir, "train_Y.npy"))
@@ -42,20 +44,20 @@ def parse_args():
 
     return parser.parse_known_args()
 
-###### Main application  ###########
+###### Main application  ############
 if __name__ == "__main__":
 
     ###### Parse input arguments ############
     args, unknown = parse_args()
     print(args)
 
-    ###### Load Data from input channels #################
+    ###### Load data from input channels ############
     X_train, y_train = load_training_data(args.train)
     X_test, y_test = load_testing_data(args.test)
     embedding_matrix = load_embeddings(args.embeddings)
 
 
-    ####### Setup model architecture #############
+    ###### Setup model architecture ############
     model = Sequential()
     model.add(Embedding(
         args.vocab_size,
@@ -72,7 +74,7 @@ if __name__ == "__main__":
     model.add(Dense(128, activation="relu", name="dense_1"))
     model.add(Dense(args.num_classes, activation="softmax", name="out_1"))
 
-    ######### compile the model ###############
+    ###### Compile the model ############
     optimizer = tf.keras.optimizers.RMSprop(learning_rate=args.learning_rate)
     model.compile(optimizer=optimizer, loss="binary_crossentropy", metrics=["acc"])
 
@@ -91,7 +93,7 @@ if __name__ == "__main__":
     )
 
 
-    ######### save Keras model for Tensorflow Serving ############
+    ###### Save Keras model for TensorFlow Serving ############
     print(f"------ save model to {os.path.join(args.model_dir, 'model/1/')}")
 
     sess = tf.keras.backend.get_session()
