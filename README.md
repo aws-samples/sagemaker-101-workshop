@@ -7,6 +7,6 @@ This repository accompanies a hands-on training event to introduce data scientis
 Sessions in suggested order:
 
 * [builtin_algorithm_hpo_tabular](builtin_algorithm_hpo_tabular): Demonstrating how to use (and tune the hyperparameters of) a **pre-built, SageMaker-provided algorithm** (Applying XGBoost to tabular data)
-* [custom_sklearn_rf](custom_sklearn_rf): Introductory example showing how to **bring your own algorithm**, using SageMaker's SKLearn container environment as a base (Predicting housing prices)
+* (Optional) [custom_sklearn_rf](custom_sklearn_rf): Introductory example showing how to **bring your own algorithm**, using SageMaker's SKLearn container environment as a base (Predicting housing prices)
 * [custom_tensorflow_keras_nlp](custom_tensorflow_keras_nlp): Demonstrating how to **bring your own algorithm**, using SageMaker's TensorFlow container environment as a base (Classifying news headline text)
 * [migration_challenge_keras_image](migration_challenge_keras_image): A challenge to use what you've learned to **migrate an existing notebook** to SageMaker model training job and real-time inference endpoint deployment (Classifying MNIST DIGITS images)
