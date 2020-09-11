@@ -3,7 +3,9 @@ from __future__ import division
 # Python Built-Ins:
 import os
 import re
+import shutil
 import subprocess
+import zipfile
 
 # External Dependencies:
 from keras.preprocessing.text import Tokenizer
@@ -20,8 +22,15 @@ def download_dataset():
         ["wget -O data/NewsAggregatorDataset.zip https://archive.ics.uci.edu/ml/machine-learning-databases/00359/NewsAggregatorDataset.zip"],
         shell=True,
     )
-    subprocess.call(["unzip -o data/NewsAggregatorDataset.zip -d data"], shell=True)
-    subprocess.call(["rm -rf data/__MACOSX/"], shell=True)
+    
+    with zipfile.ZipFile("data/NewsAggregatorDataset.zip", 'r') as zip_ref:
+        print("Unzipping...")
+        zip_ref.extractall("data")
+    try:
+        # Clean up the noise in the folder, don't care too much if it fails:
+        shutil.rmtree("data/__MACOSX/")
+    except:
+        pass
     print("Saved to data/ folder")
 
 def dummy_encode_labels(df,label):
@@ -56,21 +65,21 @@ def get_word_embeddings(t, folder):
             [f"wget -O {folder}/glove.6B.zip http://nlp.stanford.edu/data/glove.6B.zip"],
             shell=True,
         )
-        print("Unzipping...")
-        subprocess.call([f"unzip -o {folder}/glove.6B.zip -d {folder}"], shell=True)
+        with zipfile.ZipFile(f"{folder}/glove.6B.zip", "r") as zip_ref:
+            print("Unzipping...")
+            zip_ref.extractall(folder)
 
-        subprocess.call(
-            [
-                f"rm {folder}/glove.6B.200d.txt {folder}/glove.6B.50d.txt "
-                f"{folder}/glove.6B.300d.txt {folder}/glove.6B.zip"
-            ],
-            shell=True
-        )
+        try:
+            # Remove unnecessary files, don't mind too much if fails:
+            for name in ["glove.6B.200d.txt", "glove.6B.50d.txt", "glove.6B.300d.txt", "glove.6B.zip"]:
+                os.remove(os.path.join(folder, name))
+        except:
+            pass
 
     print("Loading into memory...")
     # load the whole embedding into memory
     embeddings_index = dict()
-    with open(f"{folder}/glove.6B.100d.txt", "r") as f:
+    with open(f"{folder}/glove.6B.100d.txt", "r", encoding="utf-8") as f:
         for line in f:
             values = line.split()
             word = values[0]
