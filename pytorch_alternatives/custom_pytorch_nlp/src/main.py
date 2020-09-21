@@ -3,6 +3,9 @@
 # Python Built-Ins:
 import argparse
 import os
+import io
+import logging
+import sys
 
 # External Dependencies:
 import numpy as np
@@ -11,6 +14,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(logging.StreamHandler(sys.stdout))
 
 ###### Helper functions ############
 class Dataset(torch.utils.data.Dataset):
@@ -24,7 +31,6 @@ class Dataset(torch.utils.data.Dataset):
         return len(self.data)
 
     def __getitem__(self, index):
-
         # Load data and get label
         X = torch.as_tensor(self.data[index]).long()
         y = torch.as_tensor(self.labels[index])
@@ -52,7 +58,7 @@ def parse_args():
     parser.add_argument("--epochs", type=int, default=1)
     parser.add_argument("--learning_rate", type=float, default=0.001)
     parser.add_argument("--num_classes", type=int, default=4)
-    parser.add_argument("--vocab_size", type=int, default=300)
+    parser.add_argument("--vocab_size", type=int, default=400000)
 
     # Data, model, and output directories
     parser.add_argument("--output-data-dir", type=str, default=os.environ["SM_OUTPUT_DATA_DIR"])
@@ -64,20 +70,15 @@ def parse_args():
     return parser.parse_known_args()
 
 class Net(nn.Module):
-    def __init__(self, args):
+    def __init__(self):
         super(Net, self).__init__()
-        if "embedding_matrix" in args:
-            print("there")
-            self.embedding = nn.Embedding.from_pretrained(torch.FloatTensor(args.embedding_matrix), freeze=True)
-        else:
-            print("not there")
-            self.embedding = nn.Embedding(args.vocab_size, 100)
+        self.embedding = nn.Embedding(400000, 100)
         self.conv1 = nn.Conv1d(100, 128, kernel_size=3)
         self.max_pool1d = nn.MaxPool1d(5)
         self.flatten1 = nn.Flatten()
         self.dropout1 = nn.Dropout(p=0.3)
         self.fc1 = nn.Linear(896, 128)
-        self.fc2 = nn.Linear(128, args.num_classes)
+        self.fc2 = nn.Linear(128, 4)
 
     def forward(self, x):
         x = self.embedding(x)
@@ -111,14 +112,14 @@ def train(args):
     embedding_matrix = load_embeddings(args.embeddings)
 
     ###### Setup model architecture ############
-    args.embedding_matrix = embedding_matrix
-    model = Net(args)
+    model = Net()
+    model.embedding.weight = torch.nn.parameter.Parameter(torch.FloatTensor(embedding_matrix), False)
     
     device = torch.device('cpu')
     if torch.cuda.is_available():
         device = torch.device('cuda')
     model.to(device)
-    
+    model = torch.nn.DataParallel(model)
     optimizer = optim.RMSprop(model.parameters(), lr=args.learning_rate)
     
     for epoch in range(1, args.epochs + 1):
@@ -133,46 +134,25 @@ def train(args):
                 # average gradients manually for multi-machine cpu case only
             #_average_gradients(model)
             optimizer.step()
-            print(batch_idx)
-            if batch_idx == 200:
-                break
             if (len(train_loader.dataset) - batch_idx*16) <= 16:
                 print("epoch:{}".format(epoch))
                 print("train_loss:{:.6f}".format(loss.item()))
         print("Evaluating model")
-        #test(model, test_loader, device)
+        test(model, test_loader, device)
     save_model(model, args.model_dir)
-   #save_embedding(embedding_matrix, args.model_dir)
     
 def save_model(model, model_dir):
     path = os.path.join(model_dir, 'model.pth')
     # recommended way from http://pytorch.org/docs/master/notes/serialization.html
     torch.save(model.cpu().state_dict(), path)
 
-#def save_embedding(embedding, embedding_dir):
-#    path = os.path.join(embedding_dir, 'embedding.pth')
-#    torch.save(embedding, path)
-
 def model_fn(model_dir):
-    args, unknown = parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    #with open(os.path.join(model_dir, 'embedding.pth'), 'rb') as f:
-    #    embedding = torch.load(f)
-    model = torch.nn.DataParallel(Net(args))
+    model = torch.nn.DataParallel(Net())
+    model.eval()
     with open(os.path.join(model_dir, 'model.pth'), 'rb') as f:
         model.load_state_dict(torch.load(f))
     return model.to(device)
-
-def input_fn(request_body, request_content_type):
-    return torch.as_tensor(np.array(request_body)).long()
-
-
-# Perform prediction on the deserialized object, with the loaded model
-def predict_fn(input_object, model):
-    output = model.forward(input_object)
-    pred = output
-
-    return {'predictions':pred.item()}
 
 ###### Main application  ############
 if __name__ == "__main__":
