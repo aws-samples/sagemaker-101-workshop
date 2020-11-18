@@ -35,7 +35,7 @@ class Dataset(torch.utils.data.Dataset):
         X = torch.as_tensor(self.data[index]).long()
         y = torch.as_tensor(self.labels[index])
         return X, y
-    
+
 def load_training_data(base_dir):
     X_train = np.load(os.path.join(base_dir, "train_X.npy"))
     y_train = np.load(os.path.join(base_dir, "train_Y.npy"))
@@ -104,7 +104,7 @@ def test(model, test_loader, device):
     test_loss /= len(test_loader.dataset)
     print("val_loss:{:.4f}".format(test_loss))
     #print("val_acc:{:.4f}".format(correct/len(test_loader.dataset)))   
-    
+
 def train(args):
     ###### Load data from input channels ############
     train_loader = load_training_data(args.train)
@@ -114,14 +114,14 @@ def train(args):
     ###### Setup model architecture ############
     model = Net()
     model.embedding.weight = torch.nn.parameter.Parameter(torch.FloatTensor(embedding_matrix), False)
-    
+
     device = torch.device('cpu')
     if torch.cuda.is_available():
         device = torch.device('cuda')
     model.to(device)
     model = torch.nn.DataParallel(model)
     optimizer = optim.RMSprop(model.parameters(), lr=args.learning_rate)
-    
+
     for epoch in range(1, args.epochs + 1):
         model.train()
         for batch_idx, (X_train, y_train) in enumerate(train_loader, 1):
@@ -140,7 +140,7 @@ def train(args):
         print("Evaluating model")
         test(model, test_loader, device)
     save_model(model, args.model_dir)
-    
+
 def save_model(model, model_dir):
     path = os.path.join(model_dir, 'model.pth')
     # recommended way from http://pytorch.org/docs/master/notes/serialization.html
@@ -159,5 +159,5 @@ if __name__ == "__main__":
 
     ###### Parse input arguments ############
     args, unknown = parse_args()
-    
+
     train(args)
