@@ -4,14 +4,18 @@ from __future__ import division
 import os
 import re
 import subprocess
+import functools
+import operator
+from collections import Counter
 
 # External Dependencies:
-from keras.preprocessing.text import Tokenizer
-from keras.preprocessing.sequence import pad_sequences
-from keras.utils.np_utils import to_categorical
 import numpy as np
+import torchtext
 from sklearn import preprocessing
-import tensorflow as tf
+
+def to_categorical(y, num_classes):
+    """ 1-hot encodes a tensor """
+    return np.eye(num_classes, dtype='float32')[y]
 
 def download_dataset():
     os.makedirs("data", exist_ok=True)
@@ -28,23 +32,29 @@ def dummy_encode_labels(df,label):
     encoder = preprocessing.LabelEncoder()
     encoded_y=encoder.fit_transform(df[label].values)
     # convert integers to dummy variables (i.e. one hot encoded)
-    dummy_y = to_categorical(encoded_y)
+    dummy_y = to_categorical(encoded_y, len(encoder.classes_))
     return dummy_y, encoder.classes_
 
-def tokenize_pad_docs(df,columns):
+def tokenize_and_pad_docs(df,columns):
     docs = df[columns].values
-    # prepare tokenizer
-    t = Tokenizer()
-    t.fit_on_texts(docs)
-    vocab_size = len(t.word_index) + 1
-    # integer encode the documents
-    encoded_docs = t.texts_to_sequences(docs)
-    print(f"Vocabulary size: {vocab_size}")
-    # pad documents to a max length of 4 words
+    # pad documents to a max length of 10 words
     max_length = 40
-    padded_docs = pad_sequences(encoded_docs, maxlen=max_length, padding="post")
-    print(f"Number of headlines: {len(padded_docs)}")
-    return padded_docs, t
+    
+    t = torchtext.data.Field(
+      lower       = True,
+      tokenize   = "basic_english",
+      fix_length  = max_length
+    )
+    docs = list(map(t.preprocess, docs))
+    padded_docs = t.pad(docs)
+    t.build_vocab(padded_docs)
+    numericalized_docs = []
+    for d in padded_docs:
+        temp = []
+        for c in d:
+            temp.append(t.vocab.stoi[c])
+        numericalized_docs.append(temp)
+    return np.array(numericalized_docs), t
 
 def get_word_embeddings(t, folder):
     os.makedirs(folder, exist_ok=True)
@@ -81,9 +91,11 @@ def get_word_embeddings(t, folder):
 
     # create a weight matrix for words in training docs
     embedding_matrix = np.zeros((vocab_size, 100))
-    for word, i in t.word_index.items():
+    i = 0
+    for word in t.vocab.itos:
         embedding_vector = embeddings_index.get(word)
         if embedding_vector is not None:
             embedding_matrix[i] = embedding_vector
+        i = i+1
 
     return embedding_matrix

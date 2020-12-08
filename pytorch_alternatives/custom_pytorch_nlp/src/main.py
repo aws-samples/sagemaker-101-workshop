@@ -1,4 +1,4 @@
-"""CNN-based text classification on SageMaker with Pytorch"""
+"""CNN-based text classification on SageMaker with PyTorch"""
 
 # Python Built-Ins:
 import argparse
@@ -70,18 +70,18 @@ def parse_args():
     return parser.parse_known_args()
 
 class Net(nn.Module):
-    def __init__(self):
+    def __init__(self, vocab_size = 400000, num_classes = 4):
         super(Net, self).__init__()
-        self.embedding = nn.Embedding(400000, 100)
+        self.embedding = nn.Embedding(vocab_size, 100)
         self.conv1 = nn.Conv1d(100, 128, kernel_size=3)
         self.max_pool1d = nn.MaxPool1d(5)
         self.flatten1 = nn.Flatten()
         self.dropout1 = nn.Dropout(p=0.3)
         self.fc1 = nn.Linear(896, 128)
-        self.fc2 = nn.Linear(128, 4)
-
+        self.fc2 = nn.Linear(128, num_classes)
+    
     def forward(self, x):
-        x = self.embedding(x)
+        x = self.embedding(x)  
         x = torch.transpose(x,1,2)
         x = self.flatten1(self.max_pool1d(self.conv1(x)))
         x = self.dropout1(x)
@@ -91,19 +91,20 @@ class Net(nn.Module):
 
 def test(model, test_loader, device):
     model.eval()
-    test_loss = 0
+    test_loss = 0.0
     correct = 0
     with torch.no_grad():
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
             output = model(data)
-            test_loss += F.binary_cross_entropy(output, target, size_average=False).item()  # sum up batch loss
+            test_loss += F.binary_cross_entropy(output, target, reduction='mean').item()  # sum up batch loss
             pred = output.max(1, keepdim=True)[1]  # get the index of the max log-probability
-            #correct += pred.eq(target.view_as(pred)).sum().item()
+            target_index = target.max(1, keepdim=True)[1]
+            correct += pred.eq(target_index).sum().item()
 
     test_loss /= len(test_loader.dataset)
-    print("val_loss:{:.4f}".format(test_loss))
-    #print("val_acc:{:.4f}".format(correct/len(test_loader.dataset)))   
+    print("val_loss: {:.4f}".format(test_loss))
+    print("val_acc: {:.4f}".format(correct/len(test_loader.dataset)))   
 
 def train(args):
     ###### Load data from input channels ############
@@ -112,47 +113,43 @@ def train(args):
     embedding_matrix = load_embeddings(args.embeddings)
 
     ###### Setup model architecture ############
-    model = Net()
+    model = Net(args.vocab_size, args.num_classes)
     model.embedding.weight = torch.nn.parameter.Parameter(torch.FloatTensor(embedding_matrix), False)
-
     device = torch.device('cpu')
     if torch.cuda.is_available():
         device = torch.device('cuda')
     model.to(device)
-    model = torch.nn.DataParallel(model)
     optimizer = optim.RMSprop(model.parameters(), lr=args.learning_rate)
 
     for epoch in range(1, args.epochs + 1):
         model.train()
+        running_loss = 0.0
         for batch_idx, (X_train, y_train) in enumerate(train_loader, 1):
             data, target = X_train.to(device), y_train.to(device)
             optimizer.zero_grad()
             output = model(data)
             loss = F.binary_cross_entropy(output, target)
             loss.backward()
-            #if is_distributed and not use_cuda:
-                # average gradients manually for multi-machine cpu case only
-            #_average_gradients(model)
             optimizer.step()
-            if (len(train_loader.dataset) - batch_idx*16) <= 16:
-                print("epoch:{}".format(epoch))
-                print("train_loss:{:.6f}".format(loss.item()))
+            running_loss += loss.item()
+        print("epoch: {}".format(epoch))
+        print("train_loss: {:.6f}".format(running_loss / (len(train_loader.dataset))))     
         print("Evaluating model")
         test(model, test_loader, device)
     save_model(model, args.model_dir)
 
 def save_model(model, model_dir):
     path = os.path.join(model_dir, 'model.pth')
-    # recommended way from http://pytorch.org/docs/master/notes/serialization.html
-    torch.save(model.cpu().state_dict(), path)
+    x = torch.randint(0,10,(1,40))
+    model = model.cpu()
+    model.eval()
+    m = torch.jit.trace(model, x)
+    torch.jit.save(m, path)
 
 def model_fn(model_dir):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = torch.nn.DataParallel(Net())
-    model.eval()
-    with open(os.path.join(model_dir, 'model.pth'), 'rb') as f:
-        model.load_state_dict(torch.load(f))
-    return model.to(device)
+    model = torch.jit.load(os.path.join(model_dir, 'model.pth'))
+    return model
 
 ###### Main application  ############
 if __name__ == "__main__":
