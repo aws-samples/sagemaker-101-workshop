@@ -3,10 +3,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Resources:
   SageMakerIamRole:
-    Type: AWS::IAM::Role
+    Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: '2012-10-17'
         Statement:
           -
             Effect: Allow
@@ -15,15 +15,13 @@ Resources:
             Action: sts:AssumeRole
       Path: /
       ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
-        - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-        - "arn:aws:iam::aws:policy/service-role/AmazonPersonalizeFullAccess"
-        - "arn:aws:iam::aws:policy/IAMFullAccess"
-        - "arn:aws:iam::aws:policy/AWSLambdaFullAccess"
+        - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+        - 'arn:aws:iam::aws:policy/IAMFullAccess'
 
   # SageMaker notebook
   NotebookConfig:
-    Type: AWS::SageMaker::NotebookInstanceLifecycleConfig
+    Type: 'AWS::SageMaker::NotebookInstanceLifecycleConfig'
     Properties:
       NotebookInstanceLifecycleConfigName: !Sub '${AWS::StackName}-LifecycleConfig'
       OnStart:
@@ -40,7 +38,7 @@ Resources:
               EOF
 
   NotebookInstance:
-    Type: AWS::SageMaker::NotebookInstance
+    Type: 'AWS::SageMaker::NotebookInstance'
     Properties:
       InstanceType: ml.t2.medium
       LifecycleConfigName: !GetAtt NotebookConfig.NotebookInstanceLifecycleConfigName
