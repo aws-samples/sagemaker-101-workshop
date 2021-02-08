@@ -8,12 +8,12 @@ import subprocess
 import zipfile
 
 # External Dependencies:
-from keras.preprocessing.text import Tokenizer
-from keras.preprocessing.sequence import pad_sequences
-from keras.utils.np_utils import to_categorical
 import numpy as np
 from sklearn import preprocessing
 import tensorflow as tf
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.utils import to_categorical
 
 def download_dataset():
     os.makedirs("data", exist_ok=True)

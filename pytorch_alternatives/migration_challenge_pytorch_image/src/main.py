@@ -32,8 +32,8 @@ def parse_args():
     return parser.parse_known_args()
 
 def to_categorical(y, num_classes):
-    """ 1-hot encodes a tensor """
-    return np.eye(num_classes, dtype='float32')[y]
+    """1-hot encodes a tensor"""
+    return np.eye(num_classes, dtype="float32")[y]
 
 # TODO: Other function definitions, if you'd like to break up your code?
 def load_data(args):
@@ -144,7 +144,7 @@ def test(model, testloader, device):
         for data, target in testloader:
             data, target = data.to(device), target.to(device)
             output = model(data)
-            test_loss += loss_function(output, target, reduction='mean').item()  # sum up batch loss
+            test_loss += loss_function(output, target, reduction="mean").item()  # sum up batch loss
             pred = output.max(1, keepdim=True)[1]  # get the index of the max log-probability
             target_index = target.max(1, keepdim=True)[1]
             correct += pred.eq(target_index).sum().item()
@@ -155,9 +155,9 @@ def test(model, testloader, device):
 
 def train(trainloader, testloader, epochs, num_classes):
     model = Net(num_classes)
-    device = torch.device('cpu')
+    device = torch.device("cpu")
     if torch.cuda.is_available():
-        device = torch.device('cuda')
+        device = torch.device("cuda")
     model.to(device)
     optimizer = torch.optim.Adadelta(model.parameters())
     loss_function = F.binary_cross_entropy
@@ -181,12 +181,12 @@ def train(trainloader, testloader, epochs, num_classes):
 
 class Dataset(torch.utils.data.Dataset):
     def __init__(self, data, labels):
-        'Initialization'
+        """Initialization"""
         self.labels = labels
         self.data = data
 
     def __len__(self):
-        'Denotes the total number of samples'
+        """Denotes the total number of samples"""
         return len(self.data)
 
     def __getitem__(self, index):
@@ -197,7 +197,7 @@ class Dataset(torch.utils.data.Dataset):
     
 def model_fn(model_dir):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = torch.jit.load(os.path.join(model_dir, 'model.pth'))
+    model = torch.jit.load(os.path.join(model_dir, "model.pth"))
     return model
 
 def save_model(model, model_dir):
@@ -217,10 +217,16 @@ if __name__ == "__main__":
     x_train, y_train, x_test, y_test, input_shape, n_labels = load_data(args)
     
     # TODO: Load dataset into a PyTorch Data Loader with correct batch size
-    trainloader = torch.utils.data.DataLoader(Dataset(x_train, y_train), batch_size=args.batch_size,
-                                          shuffle=True)
-    testloader = torch.utils.data.DataLoader(Dataset(x_test, y_test), batch_size=1,
-                                          shuffle=True )
+    trainloader = torch.utils.data.DataLoader(
+        Dataset(x_train, y_train),
+        batch_size=args.batch_size,
+        shuffle=True,
+    )
+    testloader = torch.utils.data.DataLoader(
+        Dataset(x_test, y_test),
+        batch_size=1,
+        shuffle=True,
+    )
 
     # TODO: Fit the PyTorch model?
     model = train(trainloader, testloader, epochs = args.epochs, num_classes = 10)
