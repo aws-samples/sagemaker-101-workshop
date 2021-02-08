@@ -1,6 +1,8 @@
 """CNN-based image classification on SageMaker with TensorFlow and Keras
 
 REFERENCE SOLUTION IMPLEMENTATION
+
+(Complete me with help from Local Notebook.ipynb, and the NLP example's src/main.py!)
 """
 
 # Dependencies:
@@ -30,7 +32,7 @@ def parse_args():
 
     return parser.parse_known_args()
 
-# TODO: Other function definitions, if you'd like to break up your code?
+# TODO: Other function definitions, if you'd like to break up your code into functions?
 
 def load_data(args):
     labels = sorted(os.listdir(args.train))
@@ -137,7 +139,7 @@ def build_model(input_shape, n_labels):
 
 # Training script:
 if __name__ == "__main__":
-    # TODO: Load arguments from CLI / environment variables?
+    # Load arguments from CLI / environment variables:
     args, _ = parse_args()
     print(args)
 
@@ -147,7 +149,7 @@ if __name__ == "__main__":
     # TODO: Create the Keras model?
     model = build_model(input_shape, n_labels)
 
-    # TODO: Fit the Keras model?
+    # Fit the Keras model:
     model.fit(
         x_train, y_train,
         batch_size=args.batch_size,
