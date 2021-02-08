@@ -30,10 +30,11 @@ def upload_in_background(local_path: str, s3_uri: str):
             f"Uploading files from {local_path} to {s3_uri} in the background...\n"
         )
         t0 = time.time()
-        proc = subprocess.Popen(
-            ["aws", "s3", "sync", "--quiet", "--delete", local_path, s3_uri],
+        print(f"Uploading files from {local_path} to {s3_uri} in the background...\n")
+        proc = subprocess.Popen("cd data && ( find train -mindepth 1 -maxdepth 1 -type d -print0 | xargs -n1 -0 -P10 -I {} aws s3 cp --recursive --quiet {}/ s3://sagemaker-ap-southeast-2-705060800786/mnist/{}/ )",
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
+            shell=True 
         )
 
         # Unfortunately for some reason NoSuchBucket errors don't seem to show up in the logs
