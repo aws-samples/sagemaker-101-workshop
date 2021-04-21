@@ -4,9 +4,12 @@ from __future__ import division
 import os
 import re
 import subprocess
+import shutil
 import functools
 import operator
 from collections import Counter
+import tarfile
+import zipfile
 
 # External Dependencies:
 import numpy as np
@@ -21,11 +24,18 @@ def download_dataset():
     os.makedirs("data", exist_ok=True)
     print("Downloading data...")
     subprocess.call(
-        ["wget -O data/NewsAggregatorDataset.zip https://archive.ics.uci.edu/ml/machine-learning-databases/00359/NewsAggregatorDataset.zip"],
+        ["aws s3 cp s3://fast-ai-nlp/ag_news_csv.tgz data/ag_news_csv.tgz --no-sign-request"],
         shell=True,
     )
-    subprocess.call(["unzip -o data/NewsAggregatorDataset.zip -d data"], shell=True)
-    subprocess.call(["rm -rf data/__MACOSX/"], shell=True)
+    with tarfile.open("data/ag_news_csv.tgz", 'r:gz') as tar:
+        print("Unzipping...")
+        tar.extractall(path="data/")
+        tar.close()
+    try:
+        # Clean up the noise in the folder, don't care too much if it fails:
+        shutil.rmtree("data/__MACOSX/")
+    except:
+        pass
     print("Saved to data/ folder")
 
 def dummy_encode_labels(df,label):
@@ -67,15 +77,16 @@ def get_word_embeddings(t, folder):
             shell=True,
         )
         print("Unzipping...")
-        subprocess.call([f"unzip -o {folder}/glove.6B.zip -d {folder}"], shell=True)
+        with zipfile.ZipFile(f"{folder}/glove.6B.zip", "r") as zip_ref:
+            print("Unzipping...")
+            zip_ref.extractall(folder)
 
-        subprocess.call(
-            [
-                f"rm {folder}/glove.6B.200d.txt {folder}/glove.6B.50d.txt "
-                f"{folder}/glove.6B.300d.txt {folder}/glove.6B.zip"
-            ],
-            shell=True
-        )
+        try:
+            # Remove unnecessary files, don't mind too much if fails:
+            for name in ["glove.6B.200d.txt", "glove.6B.50d.txt", "glove.6B.300d.txt", "glove.6B.zip"]:
+                os.remove(os.path.join(folder, name))
+        except:
+            pass
 
     print("Loading into memory...")
     # load the whole embedding into memory
