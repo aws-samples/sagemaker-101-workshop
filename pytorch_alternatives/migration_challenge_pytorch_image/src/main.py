@@ -1,6 +1,6 @@
 """CNN-based image classification on SageMaker with PyTorch
 
-REFERENCE SOLUTION IMPLEMENTATION
+(Complete me with help from Local Notebook.ipynb, and the NLP example's src/main.py!)
 """
 
 # Dependencies:
