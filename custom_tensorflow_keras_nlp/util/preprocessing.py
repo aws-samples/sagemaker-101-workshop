@@ -5,7 +5,9 @@ import os
 import re
 import shutil
 import subprocess
+import tarfile
 import zipfile
+
 
 # External Dependencies:
 import numpy as np
@@ -19,13 +21,14 @@ def download_dataset():
     os.makedirs("data", exist_ok=True)
     print("Downloading data...")
     subprocess.call(
-        ["wget -O data/NewsAggregatorDataset.zip https://archive.ics.uci.edu/ml/machine-learning-databases/00359/NewsAggregatorDataset.zip"],
+        ["aws s3 cp s3://fast-ai-nlp/ag_news_csv.tgz data/ag_news_csv.tgz --no-sign-request"],
         shell=True,
     )
-    
-    with zipfile.ZipFile("data/NewsAggregatorDataset.zip", 'r') as zip_ref:
+
+    with tarfile.open("data/ag_news_csv.tgz", 'r:gz') as tar:
         print("Unzipping...")
-        zip_ref.extractall("data")
+        tar.extractall(path="data/")
+        tar.close()
     try:
         # Clean up the noise in the folder, don't care too much if it fails:
         shutil.rmtree("data/__MACOSX/")
