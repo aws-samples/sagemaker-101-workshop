@@ -24,6 +24,16 @@ If you've [onboarded to SageMaker Studio](https://docs.aws.amazon.com/sagemaker/
 You can refer to the [*"How Are Amazon SageMaker Studio Notebooks Different from Notebook Instances?"*](https://docs.aws.amazon.com/sagemaker/latest/dg/notebooks-comparison.html) docs page for more details on differences between the Studio and Notebook Instance environments. As that page notes, SageMaker studio does not yet support [local mode](https://aws.amazon.com/blogs/machine-learning/use-the-amazon-sagemaker-local-mode-to-train-on-your-notebook-instance/): which we find can be useful to accelerate debugging in the migration challenge, and is one reason we typically run this session on Notebook Instances instead.
 
 
+## Security
+
+See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+
+
+## License
+
+This library is licensed under the MIT-0 License. See the LICENSE file.
+
+
 ## Further Reading
 
 One major focus of this workshop is how SageMaker helps us right-size and seggregate compute resources for different ML tasks, without sacrificing (but ideally accelerating!) data scientist productivity.
