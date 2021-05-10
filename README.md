@@ -1,4 +1,4 @@
-# Getting Started with Amazon SageMaker
+# Getting Started with "Amazon SageMaker 101"
 
 This repository accompanies a hands-on training event to introduce data scientists (and ML-ready developers / technical leaders) to core model training and deployment workflows with [Amazon SageMaker](https://aws.amazon.com/sagemaker/).
 
@@ -11,17 +11,20 @@ Sessions in suggested order:
 * [custom_tensorflow_keras_nlp](custom_tensorflow_keras_nlp): Demonstrating how to **bring your own algorithm**, using SageMaker's TensorFlow container environment as a base (Classifying news headline text)
 * [migration_challenge_keras_image](migration_challenge_keras_image): A challenge to use what you've learned to **migrate an existing notebook** to SageMaker model training job and real-time inference endpoint deployment (Classifying MNIST DIGITS images)
 
+While the deep learning exercises above are presented in TensorFlow+Keras by default, PyTorch users can explore the [pytorch_alternatives folder](pytorch_alternatives) instead.
+
 
 ## Deploying in Your Own Account
 
-Our standard setup for this workshop is detailed in [.ee.tpl.yaml](.ee.tpl.yaml), a [CloudFormation template](https://aws.amazon.com/cloudformation/resources/templates/) file. You can deploy the same via the [AWS CloudFormation Console](https://console.aws.amazon.com/cloudformation/home).
+If you've [onboarded to SageMaker Studio](https://docs.aws.amazon.com/sagemaker/latest/dg/gs-studio-onboard.html), you can download this repository by launching a **System terminal** (From the "Utilities and files" section of the launcher screen) and running `git clone https://github.com/aws-samples/sagemaker-101-workshop`.
 
-If you've [onboarded to SageMaker Studio](https://docs.aws.amazon.com/sagemaker/latest/dg/gs-studio-onboard.html) and would like to use that **instead** of a Notebook Instance, you'll need to take the following additional steps:
+If you prefer to use classic [SageMaker Notebook Instances](https://docs.aws.amazon.com/sagemaker/latest/dg/nbi.html), you can find a [CloudFormation template](https://aws.amazon.com/cloudformation/resources/templates/) defining the standard setup at [.ee.tpl.yaml](.ee.tpl.yaml). This can be deployed via the [AWS CloudFormation Console](https://console.aws.amazon.com/cloudformation/home).
 
-1. To download this repository, launch a **System terminal** (from the *Other* section of the launcher screen) and run `git clone https://github.com/apac-ml-tfc/sagemaker-workshop-101`.
-1. You'll be asked to select a kernel when you first open each notebook, because the available kernels in Studio differ from those in Notebook Instances. Use **Python 3 (Data Science)** as standard and **Python 3 (TensorFlow CPU Optimized)** specifically for the 'local' notebooks in NLP and migration challenge folders (which fit TensorFlow models within the notebook itself).
+> **Note:** Some of the examples depend on [ipywidgets](@jupyter-widgets/jupyterlab-manager) for interactive inference demos, which should be installed by default in SageMaker Studio but requires additional setup on a classic Notebook Instance. See the CloudFormation template for an example installing the required libraries via Lifecycle Configuration script.
 
-You can refer to the [*"How Are Amazon SageMaker Studio Notebooks Different from Notebook Instances?"*](https://docs.aws.amazon.com/sagemaker/latest/dg/notebooks-comparison.html) docs page for more details on differences between the Studio and Notebook Instance environments. As that page notes, SageMaker studio does not yet support [local mode](https://aws.amazon.com/blogs/machine-learning/use-the-amazon-sagemaker-local-mode-to-train-on-your-notebook-instance/): which we find can be useful to accelerate debugging in the migration challenge, and is one reason we typically run this session on Notebook Instances instead.
+Depending on your setup, you may be asked to **choose a kernel** when opening some notebooks. There should be guidance at the top of each notebook on suggested kernel types, but if you can't find any, `Python 3 (Data Science)` (on Studio) or `conda_python3` (on Notebook Instances) are likely good options.
+
+You can refer to the [*"How Are Amazon SageMaker Studio Notebooks Different from Notebook Instances?"*](https://docs.aws.amazon.com/sagemaker/latest/dg/notebooks-comparison.html) docs page for more details on differences between the Studio and Notebook Instance environments. As that page notes, SageMaker studio does not yet support [local mode](https://aws.amazon.com/blogs/machine-learning/use-the-amazon-sagemaker-local-mode-to-train-on-your-notebook-instance/): which we find can be useful to accelerate debugging in the migration challenge.
 
 
 ## Security
