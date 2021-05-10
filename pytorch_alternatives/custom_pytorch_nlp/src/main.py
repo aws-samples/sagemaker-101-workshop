@@ -22,12 +22,12 @@ logger.addHandler(logging.StreamHandler(sys.stdout))
 ###### Helper functions ############
 class Dataset(torch.utils.data.Dataset):
     def __init__(self, data, labels):
-        'Initialization'
+        "Initialization"
         self.labels = labels
         self.data = data
 
     def __len__(self):
-        'Denotes the total number of samples'
+        "Denotes the total number of samples"
         return len(self.data)
 
     def __getitem__(self, index):
@@ -79,7 +79,7 @@ class Net(nn.Module):
         self.dropout1 = nn.Dropout(p=0.3)
         self.fc1 = nn.Linear(896, 128)
         self.fc2 = nn.Linear(128, num_classes)
-    
+
     def forward(self, x):
         x = self.embedding(x)  
         x = torch.transpose(x,1,2)
@@ -87,7 +87,7 @@ class Net(nn.Module):
         x = self.dropout1(x)
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
-        return F.softmax(x)
+        return F.softmax(x, dim=-1)
 
 def test(model, test_loader, device):
     model.eval()
@@ -97,7 +97,7 @@ def test(model, test_loader, device):
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
             output = model(data)
-            test_loss += F.binary_cross_entropy(output, target, reduction='mean').item()  # sum up batch loss
+            test_loss += F.binary_cross_entropy(output, target, reduction="mean").item()  # sum up batch loss
             pred = output.max(1, keepdim=True)[1]  # get the index of the max log-probability
             target_index = target.max(1, keepdim=True)[1]
             correct += pred.eq(target_index).sum().item()
@@ -115,9 +115,9 @@ def train(args):
     ###### Setup model architecture ############
     model = Net(args.vocab_size, args.num_classes)
     model.embedding.weight = torch.nn.parameter.Parameter(torch.FloatTensor(embedding_matrix), False)
-    device = torch.device('cpu')
+    device = torch.device("cpu")
     if torch.cuda.is_available():
-        device = torch.device('cuda')
+        device = torch.device("cuda")
     model.to(device)
     optimizer = optim.RMSprop(model.parameters(), lr=args.learning_rate)
 
@@ -139,7 +139,7 @@ def train(args):
     save_model(model, args.model_dir)
 
 def save_model(model, model_dir):
-    path = os.path.join(model_dir, 'model.pth')
+    path = os.path.join(model_dir, "model.pth")
     x = torch.randint(0,10,(1,40))
     model = model.cpu()
     model.eval()
@@ -148,7 +148,7 @@ def save_model(model, model_dir):
 
 def model_fn(model_dir):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = torch.jit.load(os.path.join(model_dir, 'model.pth'))
+    model = torch.jit.load(os.path.join(model_dir, "model.pth")).to(device)
     return model
 
 ###### Main application  ############

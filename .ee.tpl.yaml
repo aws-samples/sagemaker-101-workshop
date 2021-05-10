@@ -1,4 +1,4 @@
-# This basic CloudFormation template is used in temporary EventEngine accounts... The permissions are probably
+# This basic CloudFormation template is used in temporary event accounts... The permissions are probably
 # more generous than you'd want to grant in a production account!
 AWSTemplateFormatVersion: '2010-09-09'
 Resources:
@@ -46,4 +46,4 @@ Resources:
       NotebookInstanceName: !Sub '${AWS::StackName}-Notebook'
       RoleArn: !GetAtt SageMakerIamRole.Arn
       VolumeSizeInGB: 20
-      DefaultCodeRepository: https://github.com/apac-ml-tfc/sagemaker-workshop-101
+      DefaultCodeRepository: https://github.com/aws-samples/sagemaker-101-workshop

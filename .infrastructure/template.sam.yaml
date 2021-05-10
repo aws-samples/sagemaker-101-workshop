@@ -14,7 +14,7 @@ Parameters:
 
   DefaultCodeRepo:
     Type: String
-    Default: https://github.com/apac-ml-tfc/sagemaker-workshop-101
+    Default: https://github.com/aws-samples/sagemaker-101-workshop
     Description: URL of the git code repository to clone in to the SageMaker notebook.
 
   VpcId:

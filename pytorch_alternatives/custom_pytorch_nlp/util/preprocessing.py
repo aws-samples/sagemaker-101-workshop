@@ -76,7 +76,6 @@ def get_word_embeddings(t, folder):
             [f"wget -O {folder}/glove.6B.zip http://nlp.stanford.edu/data/glove.6B.zip"],
             shell=True,
         )
-        print("Unzipping...")
         with zipfile.ZipFile(f"{folder}/glove.6B.zip", "r") as zip_ref:
             print("Unzipping...")
             zip_ref.extractall(folder)
