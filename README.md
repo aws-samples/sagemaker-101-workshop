@@ -43,7 +43,7 @@ This library is licensed under the MIT-0 License. See the LICENSE file.
 
 ## Further Reading
 
-One major focus of this workshop is how SageMaker helps us right-size and seggregate compute resources for different ML tasks, without sacrificing (but ideally accelerating!) data scientist productivity. For more information on this topic, see this post on the AWS Machine Learning Blog: [Right-sizing resources and avoiding unnecessary costs in Amazon SageMaker](https://aws.amazon.com/blogs/machine-learning/right-sizing-resources-and-avoiding-unnecessary-costs-in-amazon-sagemaker/)
+One major focus of this workshop is how SageMaker helps us right-size and segregate compute resources for different ML tasks, without sacrificing (but ideally accelerating!) data scientist productivity. For more information on this topic, see this post on the AWS Machine Learning Blog: [Right-sizing resources and avoiding unnecessary costs in Amazon SageMaker](https://aws.amazon.com/blogs/machine-learning/right-sizing-resources-and-avoiding-unnecessary-costs-in-amazon-sagemaker/)
 
 As you continue to explore Amazon SageMaker, you'll also find many more useful resources in:
 
