@@ -2,9 +2,8 @@
 # Bootstrapping variables
 ##########################
 
-AWS_BRANCH?="dev"
 STACK_NAME?="sm101stack"
-#DEPLOYMENT_BUCKET_NAME?="UNDEFINED"
+DEPLOYMENT_BUCKET_NAME?="UNDEFINED"
 DEPLOYMENT_BUCKET_PREFIX?=""
 SAM_BUILD_EXTRA_ARGS?=""
 
@@ -23,11 +22,11 @@ build: ##=> Build SAM template & assets to CloudFormation on S3
 			--template template.sam.yaml \
 			$(SAM_BUILD_EXTRA_ARGS) && \
 		sam package \
-			--s3-bucket $${DEPLOYMENT_BUCKET_NAME} \
-			--s3-prefix $${DEPLOYMENT_BUCKET_PREFIX}sam \
+			--s3-bucket $(DEPLOYMENT_BUCKET_NAME) \
+			--s3-prefix $(DEPLOYMENT_BUCKET_PREFIX)sam \
 			--output-template-file template.tmp.yaml && \
 		aws s3 cp template.tmp.yaml \
-			s3://$${DEPLOYMENT_BUCKET_NAME}/$${DEPLOYMENT_BUCKET_PREFIX}SM101.cf.yaml
+			s3://$(DEPLOYMENT_BUCKET_NAME)/$(DEPLOYMENT_BUCKET_PREFIX)SM101.cf.yaml
 
 create: ##=> Create services stack (only)
 	$(info [*] Deploying...)
@@ -73,10 +72,8 @@ define HELP_MESSAGE
 
 	Environment variables:
 
-	AWS_BRANCH: "dev"
-		Description: Probably not needed...
 	DEPLOYMENT_BUCKET_NAME: "my-bucket"
-		Description: Amazon S3 bucket for staging built SAM Lambda bundles and assets
+		Description: (Required) Amazon S3 bucket for staging built SAM Lambda bundles and assets
 	DEPLOYMENT_BUCKET_PREFIX: "a/prefix/"
 		Description: For publishing to a prefix in your deployment bucket, instead of root
 	STACK_NAME: "sm101stack"
