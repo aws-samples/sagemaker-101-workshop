@@ -8,6 +8,10 @@ Instead, these exercises are chosen to demonstrate some core build/train/deploy 
 
 ## Agenda
 
+An interactive walkthrough of the content with screenshots is available at:
+
+> **[https://sagemaker-101-workshop.workshop.aws/](https://sagemaker-101-workshop.workshop.aws/)**
+
 Sessions in suggested order:
 
 * [builtin_algorithm_hpo_tabular](builtin_algorithm_hpo_tabular): Demonstrating how to use (and tune the hyperparameters of) a **pre-built, SageMaker-provided algorithm** (Applying XGBoost to tabular data)
@@ -20,7 +24,7 @@ While the deep learning exercises above are presented in TensorFlow+Keras by def
 
 ## Deploying in Your Own Account
 
-If you've [onboarded to SageMaker Studio](https://docs.aws.amazon.com/sagemaker/latest/dg/gs-studio-onboard.html), you can download this repository by launching a **System terminal** (From the "Utilities and files" section of the launcher screen) and running `git clone https://github.com/aws-samples/sagemaker-101-workshop`.
+If you've [onboarded to SageMaker Studio](https://docs.aws.amazon.com/sagemaker/latest/dg/gs-studio-onboard.html), you can download this repository by launching a **System terminal** (From the "Utilities and files" section of the launcher screen inside Studio) and running `git clone https://github.com/aws-samples/sagemaker-101-workshop`.
 
 If you prefer to use classic [SageMaker Notebook Instances](https://docs.aws.amazon.com/sagemaker/latest/dg/nbi.html), you can find a [CloudFormation template](https://aws.amazon.com/cloudformation/resources/templates/) defining the standard setup at [.ee.tpl.yaml](.ee.tpl.yaml). This can be deployed via the [AWS CloudFormation Console](https://console.aws.amazon.com/cloudformation/home).
 
