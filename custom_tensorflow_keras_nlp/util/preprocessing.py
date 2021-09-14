@@ -3,13 +3,11 @@ from __future__ import division
 # Python Built-Ins:
 import gzip
 import os
-import re
 import shutil
 import subprocess
 import tarfile
 import time
 from typing import Optional
-import zipfile
 
 # External Dependencies:
 import numpy as np
@@ -17,7 +15,6 @@ from sklearn import preprocessing
 import tensorflow as tf
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
-from tensorflow.keras.utils import to_categorical
 
 
 def wait_for_file_stable(path: str, stable_secs: int=60, poll_secs: Optional[int]=None) -> bool:
@@ -71,13 +68,14 @@ def download_dataset():
 
 def dummy_encode_labels(df,label):
     encoder = preprocessing.LabelEncoder()
-    encoded_y=encoder.fit_transform(df[label].values)
+    encoded_y = encoder.fit_transform(df[label].values)
+    num_classes = len(encoder.classes_)
     # convert integers to dummy variables (i.e. one hot encoded)
-    dummy_y = to_categorical(encoded_y)
+    dummy_y = np.eye(num_classes, dtype="float32")[encoded_y]
     return dummy_y, encoder.classes_
 
 
-def tokenize_pad_docs(df, columns, max_length=40):
+def tokenize_and_pad_docs(df, columns, max_length=40):
     docs = df[columns].values
     # prepare tokenizer
     t = Tokenizer()
