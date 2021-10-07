@@ -46,7 +46,7 @@ def load_data(args):
         label_str = labels[ix_label]
         print(f"{label_str}...", end="")
         trainfiles = filter(
-            lambda s: s.endswith(".jpg"),
+            lambda s: s.endswith(".png"),
             os.listdir(os.path.join(args.train, label_str))
         )
         for filename in trainfiles:
@@ -63,7 +63,7 @@ def load_data(args):
                 y_train.append(ix_label)
         # Repeat for test data:
         testfiles = filter(
-            lambda s: s.endswith(".jpg"),
+            lambda s: s.endswith(".png"),
             os.listdir(os.path.join(args.test, label_str))
         )
         for filename in testfiles:
