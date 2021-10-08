@@ -33,7 +33,7 @@ def parse_args():
     parser.add_argument("--epochs", type=int, default=1)
     parser.add_argument("--learning_rate", type=float, default=0.001)
     parser.add_argument("--num_classes", type=int, default=4)
-    parser.add_argument("--vocab_size", type=int, default=300)
+    parser.add_argument("--max_seq_len", type=int, default=40)
 
     # Data, model, and output directories
     parser.add_argument("--output-data-dir", type=str, default=os.environ.get("SM_OUTPUT_DATA_DIR"))
@@ -60,10 +60,10 @@ if __name__ == "__main__":
     ###### Setup model architecture ############
     model = Sequential()
     model.add(Embedding(
-        args.vocab_size,
-        100,
+        embedding_matrix.shape[0],  # Final vocabulary size
+        embedding_matrix.shape[1],  # Word vector dimensions
         weights=[embedding_matrix],
-        input_length=40,
+        input_length=args.max_seq_len,
         trainable=False,
         name="embed",
     ))
