@@ -29,6 +29,6 @@ if __name__ == "__main__":
     # TODO: Evaluate model quality and log metrics?
 
     # TODO: Save outputs (trained model) to specified folder?
-    tf.saved_model.simple_save(
+    model.save(
         ?
     )
