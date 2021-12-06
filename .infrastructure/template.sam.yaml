@@ -119,6 +119,7 @@ Resources:
       NotebookInstanceName: !Ref NotebookName
       RoleArn: !GetAtt SageMakerExecutionRole.Arn
       VolumeSizeInGB: 20
+      PlatformIdentifier: notebook-al2-v1
       DefaultCodeRepository: !Ref DefaultCodeRepo
 
 
