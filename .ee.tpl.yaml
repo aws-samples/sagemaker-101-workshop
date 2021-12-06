@@ -46,4 +46,5 @@ Resources:
       NotebookInstanceName: !Sub '${AWS::StackName}-Notebook'
       RoleArn: !GetAtt SageMakerIamRole.Arn
       VolumeSizeInGB: 20
+      PlatformIdentifier: notebook-al2-v1
       DefaultCodeRepository: https://github.com/aws-samples/sagemaker-101-workshop
