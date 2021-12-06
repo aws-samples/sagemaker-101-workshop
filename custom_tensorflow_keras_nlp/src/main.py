@@ -95,5 +95,4 @@ if __name__ == "__main__":
 
     ###### Save Keras model for TensorFlow Serving ############
     print(f"------ save model to {os.path.join(args.model_dir, 'model/1/')}")
-    
     model.save(os.path.join(args.model_dir, "model/1"))
