@@ -117,28 +117,13 @@ Resources:
       InstanceType: ml.t2.medium
       LifecycleConfigName: !GetAtt NotebookConfig.NotebookInstanceLifecycleConfigName
       NotebookInstanceName: !Ref NotebookName
+      PlatformIdentifier: notebook-al2-v1
       RoleArn: !GetAtt SageMakerExecutionRole.Arn
       VolumeSizeInGB: 20
       DefaultCodeRepository: !Ref DefaultCodeRepo
 
 
 ########  SAGEMAKER STUDIO SETUP & USER CREATION  ########
-
-  # Permissions for the Lambda functions implementing our custom CFN resources:
-  LambdaExecutionRole:
-    Type: 'AWS::IAM::Role'
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
-      Path: /
-
   LambdaExecutionPolicy:
     # TODO: Scope setup Lambda permissions down further
     # Would be good to scope more perms down to the current region & account ID for e.g.
@@ -202,10 +187,23 @@ Resources:
             Action:
               - iam:PassRole
             Resource: !GetAtt SageMakerExecutionRole.Arn
-      Roles:
-        - !Ref LambdaExecutionRole
-        # TODO: Couldn't we make LambdaExecutionRole depend on policy instead?
-        # This might let us remove a few DependsOns later
+
+  # Permissions for the Lambda functions implementing our custom CFN resources:
+  LambdaExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - !Ref LambdaExecutionPolicy
+      Path: /
 
   # Shared layer loading the cfn-response module (doesn't seem to auto-import with SAM Lambdas)
   LambdaCommonLayer:
@@ -222,7 +220,6 @@ Resources:
   # Custom resource implementation for creating SMStudio domains
   StudioDomainFunction:
     Type: 'AWS::Serverless::Function'
-    DependsOn: LambdaExecutionPolicy
     Properties:
       Description: CloudFormation custom resource implementation for SageMaker Studio domain
       CodeUri: ./fn-domain/
@@ -237,7 +234,6 @@ Resources:
   # Custom resource implementation for creating SMStudio users
   UserProfileFunction:
     Type: 'AWS::Serverless::Function'
-    DependsOn: LambdaExecutionPolicy
     Properties:
       Description: CloudFormation custom resource implementation for SageMaker Studio users
       CodeUri: ./fn-user/
@@ -265,7 +261,7 @@ Resources:
     Properties:
       ServiceToken: !GetAtt UserProfileFunction.Arn
       DomainId: !GetAtt StudioDomain.DomainId
-      UserProfileName: 'workshop-user' #!Ref UserProfileName
+      UserProfileName: 'workshop-user'
       UserSettings:
         ExecutionRole: !GetAtt SageMakerExecutionRole.Arn
 
@@ -371,7 +367,6 @@ Resources:
   UserSetupFunction:
     Type: 'AWS::Serverless::Function'
     DependsOn:
-      - LambdaExecutionPolicy
       - StudioEFSAccessPoint
       - LambdaNatGatewayRoute
       - LambdaRouteTableAssociation

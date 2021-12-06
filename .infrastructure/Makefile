@@ -24,14 +24,16 @@ build: ##=> Build SAM template & assets to CloudFormation on S3
 		sam package \
 			--s3-bucket $(DEPLOYMENT_BUCKET_NAME) \
 			--s3-prefix $(DEPLOYMENT_BUCKET_PREFIX)sam \
-			--output-template-file template.tmp.yaml && \
-		aws s3 cp template.tmp.yaml \
-			s3://$(DEPLOYMENT_BUCKET_NAME)/$(DEPLOYMENT_BUCKET_PREFIX)SM101.cf.yaml
+			--use-json \
+			--output-template-file template.tmp.json && \
+		python sam-postproc.py template.tmp.json template.tmp.json && \
+		aws s3 cp template.tmp.json \
+			s3://$(DEPLOYMENT_BUCKET_NAME)/$(DEPLOYMENT_BUCKET_PREFIX)SM101.cf.json
 
 create: ##=> Create services stack (only)
 	$(info [*] Deploying...)
 	aws cloudformation create-stack \
-			--template-body file://template.tmp.yaml \
+			--template-body file://template.tmp.json \
 			--stack-name $(STACK_NAME) \
 			--capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
 			--disable-rollback
@@ -41,7 +43,7 @@ create: ##=> Create services stack (only)
 deploy: ##=> Deploy services (flexible create or update)
 	$(info [*] Deploying...)
 	sam deploy \
-			--template-file template.tmp.yaml \
+			--template-file template.tmp.json \
 			--stack-name $(STACK_NAME) \
 			--capabilities CAPABILITY_IAM
 			# TODO: Support --parameter-overrides through MAKE?

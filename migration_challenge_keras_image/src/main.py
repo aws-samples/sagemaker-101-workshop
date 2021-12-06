@@ -165,10 +165,4 @@ if __name__ == "__main__":
     print(f"Test accuracy: {score[1]}")
 
     # TODO: Save outputs (trained model) to specified folder?
-    sess = K.get_session()
-    tf.saved_model.simple_save(
-        sess,
-        os.path.join(args.model_dir, "model/1"),
-        inputs={ "inputs": model.input },
-        outputs={ t.name: t for t in model.outputs },
-    )
+    model.save(os.path.join(args.model_dir, "model/1"))
