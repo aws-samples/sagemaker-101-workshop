@@ -364,7 +364,7 @@ Resources:
       VpcId: !GetAtt StudioDomain.VpcId
 
   # Now ready to define the implementation of our custom resource:
-  UserSetupFunction:
+  SMUserContentFunction:
     Type: 'AWS::Serverless::Function'
     DependsOn:
       - StudioEFSAccessPoint
@@ -372,7 +372,7 @@ Resources:
       - LambdaRouteTableAssociation
       - NatGateway
     Properties:
-      Description: CloudFormation custom resource implementation for SageMaker Studio users
+      Description: CloudFormation custom resource implementation for SageMaker Studio user content
       CodeUri: ./fn-usersetup/
       Handler: main.lambda_handler
       Role: !GetAtt LambdaExecutionRole.Arn
@@ -395,12 +395,12 @@ Resources:
           - !Ref LambdaSubnet
 
   # Actual resource instantiation: Clone the DefaultCodeRepo into the user's SMStudio EFS home folder:
-  UserSetup:
-    Type: 'Custom::UserSetup'
+  UserGitRepo:
+    Type: 'Custom::SMUserContent'
     DependsOn:
       - UserProfile
     Properties:
-      ServiceToken: !GetAtt UserSetupFunction.Arn
+      ServiceToken: !GetAtt SMUserContentFunction.Arn
       DomainId: !GetAtt StudioDomain.DomainId
       UserProfileName: !GetAtt UserProfile.UserProfileName
       HomeEfsFileSystemUid: !GetAtt UserProfile.HomeEfsFileSystemUid
