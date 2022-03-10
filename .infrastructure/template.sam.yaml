@@ -114,7 +114,7 @@ Resources:
   NotebookInstance:
     Type: 'AWS::SageMaker::NotebookInstance'
     Properties:
-      InstanceType: ml.t2.medium
+      InstanceType: ml.t3.medium
       LifecycleConfigName: !GetAtt NotebookConfig.NotebookInstanceLifecycleConfigName
       NotebookInstanceName: !Ref NotebookName
       PlatformIdentifier: notebook-al2-v1
