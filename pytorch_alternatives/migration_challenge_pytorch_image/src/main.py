@@ -36,6 +36,7 @@ def to_categorical(y, num_classes):
     return np.eye(num_classes, dtype="float32")[y]
 
 # TODO: Other function definitions, if you'd like to break up your code?
+# note that the MNIST tar.gz contains images in PNG format (not JPG) hence the s.endswith below has to be changed
 def load_data(args):
     labels = sorted(os.listdir(args.train))
     n_labels = len(labels)
@@ -48,7 +49,7 @@ def load_data(args):
         label_str = labels[ix_label]
         print(f"{label_str}...", end="")
         trainfiles = filter(
-            lambda s: s.endswith(".jpg"),
+            lambda s: s.endswith(".png"),
             os.listdir(os.path.join(args.train, label_str))
         )
         for filename in trainfiles:
@@ -61,7 +62,7 @@ def load_data(args):
                 y_train.append(ix_label)
         # Repeat for test data:
         testfiles = filter(
-            lambda s: s.endswith(".jpg"),
+            lambda s: s.endswith(".png"),
             os.listdir(os.path.join(args.test, label_str))
         )
         for filename in testfiles:
