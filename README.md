@@ -54,6 +54,8 @@ As you continue to explore Amazon SageMaker, you'll also find many more useful r
 - The official **[Amazon SageMaker Examples repository](https://github.com/aws/amazon-sagemaker-examples)**: with a broad range of code samples covering SageMaker use cases from beginner to expert.
 - The **[documentation](https://sagemaker.readthedocs.io/en/stable/)** (and maybe even the [source code](https://github.com/aws/sagemaker-python-sdk)) for the **SageMaker Python SDK**: The high-level, open-source [PyPI library](https://pypi.org/project/sagemaker/) we use when we `import sagemaker`.
 - The **[Amazon SageMaker Developer Guide](https://docs.aws.amazon.com/sagemaker/latest/dg/whatis.html)**: documenting the SageMaker service itself.
+    - Built-in Algorithms **[Docker Registry Paths](https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-algo-docker-registry-paths.html)**
+    - Built-in Algorithms data formats for **[training](https://docs.aws.amazon.com/sagemaker/latest/dg/cdf-training.html)** and **[inference](https://docs.aws.amazon.com/sagemaker/latest/dg/cdf-inference.html)**
 
 More advanced users may also find it helpful to refer to:
 
