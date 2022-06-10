@@ -28,47 +28,84 @@ Parameters:
       Comma-separated list of subnet IDs to use (e.g. subnet-xxxxxx), or blank to use all default subnets.
     Default: ''
 
-
 Mappings:
   RegionMap:
     us-east-1:
       datascience: 'arn:aws:sagemaker:us-east-1:081325390199:image/datascience-1.0'
+      datascience2: 'arn:aws:sagemaker:us-east-1:081325390199:image/sagemaker-data-science-38'
+      jlabv3: 'arn:aws:sagemaker:us-east-1:081325390199:image/jupyter-server-3'
     us-east-2:
       datascience: 'arn:aws:sagemaker:us-east-2:429704687514:image/datascience-1.0'
+      datascience2: 'arn:aws:sagemaker:us-east-2:429704687514:image/sagemaker-data-science-38'
+      jlabv3: 'arn:aws:sagemaker:us-east-2:429704687514:image/jupyter-server-3'
     us-west-1:
       datascience: 'arn:aws:sagemaker:us-west-1:742091327244:image/datascience-1.0'
+      datascience2: 'arn:aws:sagemaker:us-west-1:742091327244:image/sagemaker-data-science-38'
+      jlabv3: 'arn:aws:sagemaker:us-west-1:742091327244:image/jupyter-server-3'
     us-west-2:
       datascience: 'arn:aws:sagemaker:us-west-2:236514542706:image/datascience-1.0'
+      datascience2: 'arn:aws:sagemaker:us-west-2:236514542706:image/sagemaker-data-science-38'
+      jlabv3: 'arn:aws:sagemaker:us-west-2:236514542706:image/jupyter-server-3'
     af-south-1:
       datascience: 'arn:aws:sagemaker:af-south-1:559312083959:image/datascience-1.0'
+      datascience2: 'arn:aws:sagemaker:af-south-1:559312083959:image/sagemaker-data-science-38'
+      jlabv3: 'arn:aws:sagemaker:af-south-1:559312083959:image/jupyter-server-3'
     ap-east-1:
       datascience: 'arn:aws:sagemaker:ap-east-1:493642496378:image/datascience-1.0'
+      datascience2: 'arn:aws:sagemaker:ap-east-1:493642496378:image/sagemaker-data-science-38'
+      jlabv3: 'arn:aws:sagemaker:ap-east-1:493642496378:image/jupyter-server-3'
     ap-south-1:
       datascience: 'arn:aws:sagemaker:ap-south-1:394103062818:image/datascience-1.0'
+      datascience2: 'arn:aws:sagemaker:ap-south-1:394103062818:image/sagemaker-data-science-38'
+      jlabv3: 'arn:aws:sagemaker:ap-south-1:394103062818:image/jupyter-server-3'
     ap-northeast-2:
       datascience: 'arn:aws:sagemaker:ap-northeast-2:806072073708:image/datascience-1.0'
+      datascience2: 'arn:aws:sagemaker:ap-northeast-2:806072073708:image/sagemaker-data-science-38'
+      jlabv3: 'arn:aws:sagemaker:ap-northeast-2:806072073708:image/jupyter-server-3'
     ap-southeast-1:
       datascience: 'arn:aws:sagemaker:ap-southeast-1:492261229750:image/datascience-1.0'
+      datascience2: 'arn:aws:sagemaker:ap-southeast-1:492261229750:image/sagemaker-data-science-38'
+      jlabv3: 'arn:aws:sagemaker:ap-southeast-1:492261229750:image/jupyter-server-3'
     ap-southeast-2:
       datascience: 'arn:aws:sagemaker:ap-southeast-2:452832661640:image/datascience-1.0'
+      datascience2: 'arn:aws:sagemaker:ap-southeast-2:452832661640:image/sagemaker-data-science-38'
+      jlabv3: 'arn:aws:sagemaker:ap-southeast-2:452832661640:image/jupyter-server-3'
     ap-northeast-1:
       datascience: 'arn:aws:sagemaker:ap-northeast-1:102112518831:image/datascience-1.0'
+      datascience2: 'arn:aws:sagemaker:ap-northeast-1:102112518831:image/sagemaker-data-science-38'
+      jlabv3: 'arn:aws:sagemaker:ap-northeast-1:102112518831:image/jupyter-server-3'
     ca-central-1:
       datascience: 'arn:aws:sagemaker:ca-central-1:310906938811:image/datascience-1.0'
+      datascience2: 'arn:aws:sagemaker:ca-central-1:310906938811:image/sagemaker-data-science-38'
+      jlabv3: 'arn:aws:sagemaker:ca-central-1:310906938811:image/jupyter-server-3'
     eu-central-1:
       datascience: 'arn:aws:sagemaker:eu-central-1:936697816551:image/datascience-1.0'
+      datascience2: 'arn:aws:sagemaker:eu-central-1:936697816551:image/sagemaker-data-science-38'
+      jlabv3: 'arn:aws:sagemaker:eu-central-1:936697816551:image/jupyter-server-3'
     eu-west-1:
       datascience: 'arn:aws:sagemaker:eu-west-1:470317259841:image/datascience-1.0'
+      datascience2: 'arn:aws:sagemaker:eu-west-1:470317259841:image/sagemaker-data-science-38'
+      jlabv3: 'arn:aws:sagemaker:eu-west-1:470317259841:image/jupyter-server-3'
     eu-west-2:
       datascience: 'arn:aws:sagemaker:eu-west-2:712779665605:image/datascience-1.0'
+      datascience2: 'arn:aws:sagemaker:eu-west-2:712779665605:image/sagemaker-data-science-38'
+      jlabv3: 'arn:aws:sagemaker:eu-west-2:712779665605:image/jupyter-server-3'
     eu-west-3:
       datascience: 'arn:aws:sagemaker:eu-west-3:615547856133:image/datascience-1.0'
+      datascience2: 'arn:aws:sagemaker:eu-west-3:615547856133:image/sagemaker-data-science-38'
+      jlabv3: 'arn:aws:sagemaker:eu-west-3:615547856133:image/jupyter-server-3'
     eu-north-1:
       datascience: 'arn:aws:sagemaker:eu-north-1:243637512696:image/datascience-1.0'
+      datascience2: 'arn:aws:sagemaker:eu-north-1:243637512696:image/sagemaker-data-science-38'
+      jlabv3: 'arn:aws:sagemaker:eu-north-1:243637512696:image/jupyter-server-3'
     eu-south-1:
       datascience: 'arn:aws:sagemaker:eu-south-1:592751261982:image/datascience-1.0'
+      datascience2: 'arn:aws:sagemaker:eu-south-1:592751261982:image/sagemaker-data-science-38'
+      jlabv3: 'arn:aws:sagemaker:eu-south-1:592751261982:image/jupyter-server-3'
     sa-east-1:
       datascience: 'arn:aws:sagemaker:sa-east-1:782484402741:image/datascience-1.0'
+      datascience2: 'arn:aws:sagemaker:sa-east-1:782484402741:image/sagemaker-data-science-38'
+      jlabv3: 'arn:aws:sagemaker:sa-east-1:782484402741:image/jupyter-server-3'
 
 Resources:
 
@@ -117,7 +154,7 @@ Resources:
       InstanceType: ml.t3.medium
       LifecycleConfigName: !GetAtt NotebookConfig.NotebookInstanceLifecycleConfigName
       NotebookInstanceName: !Ref NotebookName
-      PlatformIdentifier: notebook-al2-v1
+      PlatformIdentifier: notebook-al2-v2
       RoleArn: !GetAtt SageMakerExecutionRole.Arn
       VolumeSizeInGB: 20
       DefaultCodeRepository: !Ref DefaultCodeRepo
@@ -170,12 +207,15 @@ Resources:
               - sagemaker:DescribeDomain
               - sagemaker:UpdateDomain
               - sagemaker:CreateUserProfile
+              - sagemaker:CreateStudioLifecycleConfig
+              - sagemaker:DeleteStudioLifecycleConfig
               - sagemaker:DeleteUserProfile
               - sagemaker:DescribeUserProfile
               - sagemaker:UpdateUserProfile
             Resource:
               - !Sub 'arn:${AWS::Partition}:sagemaker:*:*:domain/*'
               - !Sub 'arn:${AWS::Partition}:sagemaker:*:*:user-profile/*'
+              - !Sub 'arn:${AWS::Partition}:sagemaker:${AWS::Region}:${AWS::AccountId}:studio-lifecycle-config/*'
           - Sid: CreateSageMakerServiceLinkedRole
             Effect: Allow
             Action:
@@ -231,6 +271,21 @@ Resources:
       Layers:
         - !Ref LambdaCommonLayer
 
+  # Custom resource implementation for creating SMStudio lifecycle config scripts
+  StudioLifecycleConfigFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Description: >-
+        CloudFormation custom resource implementation for SageMaker Studio lifecycle config scripts
+      CodeUri: ./fn-studio-lcconfig/
+      Handler: main.lambda_handler
+      MemorySize: 128
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.8
+      Timeout: 900
+      Layers:
+        - !Ref LambdaCommonLayer
+
   # Custom resource implementation for creating SMStudio users
   UserProfileFunction:
     Type: 'AWS::Serverless::Function'
@@ -254,6 +309,73 @@ Resources:
       DefaultUserSettings:
         ExecutionRole: !GetAtt SageMakerExecutionRole.Arn
 
+  # Install extra assistive coding tools to provide features like autocomplete in Studio:
+  StudioLifecycleConfig:
+    Type: 'Custom::StudioLifecycleConfig'
+    Properties:
+      ServiceToken: !GetAtt StudioLifecycleConfigFunction.Arn
+      AppType: JupyterServer
+      DomainId: !GetAtt StudioDomain.DomainId
+      Name: install-lsp-features
+      Content:
+        Fn::Base64: |
+          #!/bin/bash
+          set -eu
+
+          echo "Checking conda environments"
+          if conda info --envs | grep ^studio; then
+              # Standard on JLv3 image at time of writing
+              CONDA_ENV=studio
+          else
+              # Standard on JLv1 image at time of writing
+              exit 0
+          fi
+          echo "Activating conda env $CONDA_ENV"
+          source activate $CONDA_ENV
+
+          echo "Installing jupyterlab-lsp and language tools"
+          pip install jupyterlab-lsp \
+              'python-lsp-server[flake8,mccabe,pycodestyle,pydocstyle,pyflakes,pylint,rope]' \
+              jupyterlab-spellchecker \
+              jupyterlab-code-formatter black isort \
+              jupyterlab-s3-browser
+          jlpm add --dev bash-language-server dockerfile-language-server-nodejs
+
+          CMP_CONFIG_DIR=.jupyter/lab/user-settings/@krassowski/jupyterlab-lsp/
+          CMP_CONFIG_FILE=completion.jupyterlab-settings
+          CMP_CONFIG_PATH="$CMP_CONFIG_DIR/$CMP_CONFIG_FILE"
+          if test -f $CMP_CONFIG_PATH; then
+              echo "jupyterlab-lsp config file already exists: Skipping default config setup"
+          else
+              echo "Setting continuous hinting to enabled by default"
+              mkdir -p $CMP_CONFIG_DIR
+              echo '{ "continuousHinting": true }' > $CMP_CONFIG_PATH
+          fi
+
+          FMT_CONFIG_DIR=~/.jupyter/lab/user-settings/@ryantam626/jupyterlab_code_formatter
+          FMT_CONFIG_FILE=settings.jupyterlab-settings
+          FMT_CONFIG_PATH="$FMT_CONFIG_DIR/$FMT_CONFIG_FILE"
+          if test -f $FMT_CONFIG_PATH; then
+              echo "jupyterlab-code-formatter config file already exists: Skipping default config setup"
+          else
+              echo "Configuring jupyterlab-code-formatter format on save and line width"
+              mkdir -p $FMT_CONFIG_DIR
+              cat > $FMT_CONFIG_PATH <<EOF
+          # Could turn on "formatOnSave": true here, but would raise error messages for partial notebooks
+          {"black": {"line_length": 100}, "isort": {"line_length": 100}}
+          EOF
+          fi
+          echo "Configuring pycodestyle linter max line width"
+          mkdir -p ~/.config
+          cat > ~/.config/pycodestyle <<EOF
+          [pycodestyle]
+          max-line-length = 100
+          EOF
+
+          echo "Restarting Jupyter server..."
+          nohup supervisorctl -c /etc/supervisor/conf.d/supervisord.conf restart jupyterlabserver \
+              > /dev/null 2>&1
+
   UserProfile:
     Type: 'Custom::UserProfile'
     DependsOn:
@@ -264,6 +386,15 @@ Resources:
       UserProfileName: 'workshop-user'
       UserSettings:
         ExecutionRole: !GetAtt SageMakerExecutionRole.Arn
+        # Set JupyterLabv3 default and attach the lifecycle configuration script:
+        JupyterServerAppSettings:
+          DefaultResourceSpec:
+            SageMakerImageArn: !FindInMap
+              - RegionMap
+              - !Ref 'AWS::Region'
+              - jlabv3
+            InstanceType: system
+            LifecycleConfigArn: !Ref StudioLifecycleConfig
 
   # Pre-warm the JupyterServer app to make initially opening Studio faster for participants:
   SMJupyterApp:
@@ -289,6 +420,22 @@ Resources:
           - RegionMap
           - !Ref 'AWS::Region'
           - datascience
+      UserProfileName: !GetAtt UserProfile.UserProfileName
+
+  # ...Also the new Data Science 2.0 kernel in case we want to try out JupyterLab debugger:
+  SMDataScience2App:
+    Type: 'AWS::SageMaker::App'
+    DependsOn: UserProfile
+    Properties: 
+      AppName: instance-prewarm-datascience2-ml-t3-medium
+      AppType: KernelGateway
+      DomainId: !GetAtt StudioDomain.DomainId
+      ResourceSpec: 
+        InstanceType:  ml.t3.medium
+        SageMakerImageArn: !FindInMap
+          - RegionMap
+          - !Ref 'AWS::Region'
+          - datascience2
       UserProfileName: !GetAtt UserProfile.UserProfileName
 
 ########  PRE-CLONING GIT REPO TO SAGEMAKER STUDIO ENVIRONMENT  ########
