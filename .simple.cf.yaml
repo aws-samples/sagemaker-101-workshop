@@ -1,5 +1,6 @@
-# This basic CloudFormation template is used in temporary event accounts... The permissions are probably
-# more generous than you'd want to grant in a production account!
+# This CloudFormation template provides a basic SageMaker Notebook Instance setup for you to try out
+# the workshop. The permissions are probably more generous than you'd want to grant in a production
+# account!
 AWSTemplateFormatVersion: '2010-09-09'
 Resources:
   SageMakerIamRole:
@@ -17,7 +18,6 @@ Resources:
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
         - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
-        - 'arn:aws:iam::aws:policy/IAMFullAccess'
 
   # SageMaker notebook
   NotebookConfig:
@@ -46,5 +46,5 @@ Resources:
       NotebookInstanceName: !Sub '${AWS::StackName}-Notebook'
       RoleArn: !GetAtt SageMakerIamRole.Arn
       VolumeSizeInGB: 20
-      PlatformIdentifier: notebook-al2-v1
+      PlatformIdentifier: notebook-al2-v2
       DefaultCodeRepository: https://github.com/aws-samples/sagemaker-101-workshop

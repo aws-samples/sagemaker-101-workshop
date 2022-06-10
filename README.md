@@ -24,9 +24,9 @@ While the deep learning exercises above are presented in TensorFlow+Keras by def
 
 ## Deploying in Your Own Account
 
-If you've [onboarded to SageMaker Studio](https://docs.aws.amazon.com/sagemaker/latest/dg/gs-studio-onboard.html), you can download this repository by launching a **System terminal** (From the "Utilities and files" section of the launcher screen inside Studio) and running `git clone https://github.com/aws-samples/sagemaker-101-workshop`.
+The recommended way to explore these exercises is to **[onboard to SageMaker Studio](https://docs.aws.amazon.com/sagemaker/latest/dg/gs-studio-onboard.html)**. Once you've done this, you can download this repository by launching a **System terminal** (From the "Utilities and files" section of the launcher screen inside Studio) and running `git clone https://github.com/aws-samples/sagemaker-101-workshop`. If possible we recommend to configure Studio to use JupyterLab v3, and you may also like to install assistive coding tools as described in [this AWS ML blog post](https://aws.amazon.com/blogs/machine-learning/amazon-sagemaker-studio-and-sagemaker-notebook-instance-now-come-with-jupyterlab-3-notebooks-to-boost-developer-productivity/).
 
-If you prefer to use classic [SageMaker Notebook Instances](https://docs.aws.amazon.com/sagemaker/latest/dg/nbi.html), you can find a [CloudFormation template](https://aws.amazon.com/cloudformation/resources/templates/) defining the standard setup at [.ee.tpl.yaml](.ee.tpl.yaml). This can be deployed via the [AWS CloudFormation Console](https://console.aws.amazon.com/cloudformation/home).
+If you prefer to use classic [SageMaker Notebook Instances](https://docs.aws.amazon.com/sagemaker/latest/dg/nbi.html), you can find a [CloudFormation template](https://aws.amazon.com/cloudformation/resources/templates/) defining a simple setup at [.simple.cf.yaml](.simple.cf.yaml). This can be deployed via the [AWS CloudFormation Console](https://console.aws.amazon.com/cloudformation/home).
 
 > **Note:** Some of the examples depend on [ipywidgets](@jupyter-widgets/jupyterlab-manager) for interactive inference demos, which should be installed by default in SageMaker Studio but requires additional setup on a classic Notebook Instance. See the CloudFormation template for an example installing the required libraries via Lifecycle Configuration script.
 

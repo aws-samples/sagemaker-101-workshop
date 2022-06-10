@@ -16,6 +16,7 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Conv2D, Dense, Dropout, Flatten, MaxPooling2D
 from tensorflow.keras.models import Sequential
 
+
 def parse_args():
     """Acquire hyperparameters and directory locations passed by SageMaker"""
     parser = argparse.ArgumentParser()
@@ -33,6 +34,7 @@ def parse_args():
     return parser.parse_known_args()
 
 # TODO: Other function definitions, if you'd like to break up your code into functions?
+
 
 def load_data(args):
     labels = sorted(os.listdir(args.train))
@@ -118,6 +120,7 @@ def load_data(args):
 
     return x_train, y_train, x_test, y_test, input_shape, n_labels
 
+
 def build_model(input_shape, n_labels):
     model = Sequential()
     model.add(Conv2D(32, kernel_size=(3, 3), activation="relu", input_shape=input_shape))
@@ -137,6 +140,7 @@ def build_model(input_shape, n_labels):
 
     return model
 
+
 # Training script:
 if __name__ == "__main__":
     # Load arguments from CLI / environment variables:
@@ -155,7 +159,7 @@ if __name__ == "__main__":
         batch_size=args.batch_size,
         epochs=args.epochs,
         shuffle=True,
-        verbose=2, # Hint: You might prefer =2 for running in SageMaker!
+        verbose=2,  # Hint: You might prefer =2 for running in SageMaker!
         validation_data=(x_test, y_test)
     )
 
