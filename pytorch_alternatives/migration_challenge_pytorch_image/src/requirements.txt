@@ -1,5 +1,6 @@
-# We could request package installs in here if we needed something not in our framework container's image
+# We could request package installs in here if we needed something not in our framework container's
+# image
 #
-# Listed packages are installed at run time, so for standard/commonly-used deps you may consider building
-# them in to a custom container image instead for efficiency (faster job run times)... But requirements.txt
-# is simpler to get started with.
+# Listed packages are installed at run time, so for standard/commonly-used deps you may consider
+# building them in to a custom container image instead for efficiency (faster job run times)... But
+# requirements.txt is simpler to get started with.

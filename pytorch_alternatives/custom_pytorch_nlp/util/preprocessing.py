@@ -38,32 +38,6 @@ def wait_for_file_stable(path: str, stable_secs: int=60, poll_secs: Optional[int
 
     return True
 
-
-def download_dataset():
-    os.makedirs("data", exist_ok=True)
-    zip_filepath = os.path.join("data", "ag_news_csv.tgz")
-
-    if wait_for_file_stable(zip_filepath):
-        print("Using previously-downloaded dataset")
-    else:
-        print("Downloading data...")
-        subprocess.call(
-            [f"aws s3 cp s3://fast-ai-nlp/ag_news_csv.tgz {zip_filepath} --no-sign-request"],
-            shell=True,
-        )
-
-    with tarfile.open(zip_filepath, 'r:gz') as tar:
-        print("Unzipping...")
-        tar.extractall(path="data")
-        tar.close()
-    try:
-        # Clean up the noise in the folder, don't care too much if it fails:
-        shutil.rmtree(os.path.join("data", "__MACOSX"))
-    except:
-        pass
-    print("Saved to data/ folder")
-
-
 def dummy_encode_labels(df,label):
     encoder = preprocessing.LabelEncoder()
     encoded_y = encoder.fit_transform(df[label].values)

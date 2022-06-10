@@ -10,10 +10,9 @@ import os
 import numpy as np
 from PIL import Image
 import torch
-import torchvision
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
+
 
 def parse_args():
     """Acquire hyperparameters and directory locations passed by SageMaker"""
@@ -31,11 +30,14 @@ def parse_args():
 
     return parser.parse_known_args()
 
+
 def to_categorical(y, num_classes):
     """1-hot encodes a tensor"""
     return np.eye(num_classes, dtype="float32")[y]
 
+
 # TODO: Other function definitions, if you'd like to break up your code?
+# note that the MNIST tar.gz contains images in PNG format (not JPG) hence the s.endswith below has to be changed
 def load_data(args):
     labels = sorted(os.listdir(args.train))
     n_labels = len(labels)
@@ -48,7 +50,7 @@ def load_data(args):
         label_str = labels[ix_label]
         print(f"{label_str}...", end="")
         trainfiles = filter(
-            lambda s: s.endswith(".jpg"),
+            lambda s: s.endswith(".png"),
             os.listdir(os.path.join(args.train, label_str))
         )
         for filename in trainfiles:
@@ -61,7 +63,7 @@ def load_data(args):
                 y_train.append(ix_label)
         # Repeat for test data:
         testfiles = filter(
-            lambda s: s.endswith(".jpg"),
+            lambda s: s.endswith(".png"),
             os.listdir(os.path.join(args.test, label_str))
         )
         for filename in testfiles:
@@ -72,7 +74,7 @@ def load_data(args):
                     ))
                 )
                 y_test.append(ix_label)
-                
+
     print("Shuffling trainset...")
     train_shuffled = [(x_train[ix], y_train[ix]) for ix in range(len(y_train))]
     np.random.shuffle(train_shuffled)
@@ -104,7 +106,6 @@ def load_data(args):
     print(x_train.shape[0], "train samples")
     print(x_test.shape[0], "test samples")
 
-    
     # convert class vectors to binary class matrices
     y_train = to_categorical(y_train, n_labels)
     y_test = to_categorical(y_test, n_labels)
@@ -113,6 +114,7 @@ def load_data(args):
     print("y_train shape:", y_train.shape)
 
     return x_train, y_train, x_test, y_test, input_shape, n_labels
+
 
 class Net(nn.Module):
     def __init__(self, num_classes):
@@ -126,7 +128,7 @@ class Net(nn.Module):
         self.fc1 = nn.Linear(9216, 128)
         self.dropout2 = nn.Dropout(p=0.5)
         self.fc2 = nn.Linear(128, num_classes)
-    
+
     def forward(self, x):
         x = F.relu(self.conv1(x))
         x = F.relu(self.conv2(x))
@@ -134,6 +136,7 @@ class Net(nn.Module):
         x = F.relu(self.fc1(x))
         x = self.fc2(self.dropout2(x))
         return F.softmax(x)
+
 
 def test(model, testloader, device):
     loss_function = F.binary_cross_entropy
@@ -153,6 +156,7 @@ def test(model, testloader, device):
     print("val_loss: {:.4f}".format(test_loss))
     print("val_acc: {:.4f}".format(correct/len(testloader.dataset)))   
 
+
 def train(trainloader, testloader, epochs, num_classes):
     model = Net(num_classes)
     device = torch.device("cpu")
@@ -161,7 +165,7 @@ def train(trainloader, testloader, epochs, num_classes):
     model.to(device)
     optimizer = torch.optim.Adadelta(model.parameters())
     loss_function = F.binary_cross_entropy
-    
+
     for epoch in range(1, epochs + 1):
         model.train()
         running_loss = 0.0
@@ -179,6 +183,7 @@ def train(trainloader, testloader, epochs, num_classes):
         test(model, testloader, device)
     return model
 
+
 class Dataset(torch.utils.data.Dataset):
     def __init__(self, data, labels):
         """Initialization"""
@@ -194,11 +199,13 @@ class Dataset(torch.utils.data.Dataset):
         X = self.data[index]
         y = self.labels[index]
         return X, y
-    
+
+
 def model_fn(model_dir):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = torch.jit.load(os.path.join(model_dir, "model.pth"))
     return model
+
 
 def save_model(model, model_dir):
     path = os.path.join(model_dir, "model.pth")
@@ -208,6 +215,7 @@ def save_model(model, model_dir):
     m = torch.jit.trace(model, x)
     torch.jit.save(m, path)
 
+
 # Training script:
 if __name__ == "__main__":
     # TODO: Load arguments from CLI / environment variables?
@@ -215,7 +223,7 @@ if __name__ == "__main__":
 
     # TODO: Load images from container filesystem into training / test data sets?
     x_train, y_train, x_test, y_test, input_shape, n_labels = load_data(args)
-    
+
     # TODO: Load dataset into a PyTorch Data Loader with correct batch size
     trainloader = torch.utils.data.DataLoader(
         Dataset(x_train, y_train),
