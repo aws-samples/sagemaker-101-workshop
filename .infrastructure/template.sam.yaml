@@ -333,12 +333,17 @@ Resources:
           echo "Activating conda env $CONDA_ENV"
           source activate $CONDA_ENV
 
+          BOTO3_VER=`pip show boto3 | grep 'Version:' | sed 's/Version: //'`
+          BOTOCORE_VER=`pip show botocore | grep 'Version:' | sed 's/Version: //'`
+
           echo "Installing jupyterlab-lsp and language tools"
           pip install jupyterlab-lsp \
               'python-lsp-server[flake8,mccabe,pycodestyle,pydocstyle,pyflakes,pylint,rope]' \
               jupyterlab-spellchecker \
               jupyterlab-code-formatter black isort \
-              jupyterlab-s3-browser
+              jupyterlab-s3-browser \
+              boto3==$BOTO3_VER \
+              botocore==$BOTOCORE_VER
           jlpm add --dev bash-language-server dockerfile-language-server-nodejs
 
           CMP_CONFIG_DIR=.jupyter/lab/user-settings/@krassowski/jupyterlab-lsp/
@@ -360,8 +365,8 @@ Resources:
           else
               echo "Configuring jupyterlab-code-formatter format on save and line width"
               mkdir -p $FMT_CONFIG_DIR
+              # Could turn on "formatOnSave": true here, but would raise error messages for partial nbks
               cat > $FMT_CONFIG_PATH <<EOF
-          # Could turn on "formatOnSave": true here, but would raise error messages for partial notebooks
           {"black": {"line_length": 100}, "isort": {"line_length": 100}}
           EOF
           fi
