@@ -143,7 +143,7 @@ Resources:
               # Install extension for ipywidgets interactivity:
               sudo -u ec2-user -i <<'EOF'
               source /home/ec2-user/anaconda3/bin/activate JupyterSystemEnv
-              jupyter labextension install @jupyter-widgets/jupyterlab-manager
+              jupyter labextension install @jupyter-widgets/jupyterlab-manager ipycanvas
               source /home/ec2-user/anaconda3/bin/deactivate
               EOF
 
@@ -336,14 +336,15 @@ Resources:
           BOTO3_VER=`pip show boto3 | grep 'Version:' | sed 's/Version: //'`
           BOTOCORE_VER=`pip show botocore | grep 'Version:' | sed 's/Version: //'`
 
-          echo "Installing jupyterlab-lsp and language tools"
+          echo "Installing jupyterlab-lsp, language tools, and canvas widget"
           pip install jupyterlab-lsp \
               'python-lsp-server[flake8,mccabe,pycodestyle,pydocstyle,pyflakes,pylint,rope]' \
               jupyterlab-spellchecker \
               jupyterlab-code-formatter black isort \
               jupyterlab-s3-browser \
               boto3==$BOTO3_VER \
-              botocore==$BOTOCORE_VER
+              botocore==$BOTOCORE_VER \
+              ipycanvas
           jlpm add --dev bash-language-server dockerfile-language-server-nodejs
 
           CMP_CONFIG_DIR=.jupyter/lab/user-settings/@krassowski/jupyterlab-lsp/
