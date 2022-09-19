@@ -30,9 +30,9 @@ class Net(nn.Module):
         self.dropout1 = nn.Dropout(p=0.3)
         self.fc1 = nn.Linear(896, 128)
         self.fc2 = nn.Linear(128, num_classes)
-    
+
     def forward(self, x):
-        x = self.embedding(x)  
+        x = self.embedding(x)
         x = torch.transpose(x,1,2)
         x = self.flatten1(self.max_pool1d(self.conv1(x)))
         x = self.dropout1(x)
