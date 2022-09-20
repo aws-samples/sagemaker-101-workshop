@@ -83,11 +83,29 @@ def handle_create(event, context):
     script_arn = resp["StudioLifecycleConfigArn"]
     domain_id = resource_config.get("DomainId")
     if domain_id is not None:
-        attach_lcc_to_domain(
-            domain_id=domain_id,
-            script_arn=script_arn,
-            app_type=resource_config["AppType"],
-        )
+        try:
+            attach_lcc_to_domain(
+                domain_id=domain_id,
+                script_arn=script_arn,
+                app_type=resource_config["AppType"],
+            )
+        except Exception as e:
+            # If creation succeeded but attachment failed, send explicit fail response to try and
+            # make sure the physical resource ID is set correctly and therefore enable rollback of
+            # the resource:
+            logger.exception("Failed to attach LCC to SM domain")
+            cfnresponse.send(
+                event,
+                context,
+                cfnresponse.FAILED,
+                {
+                    "AppType": resource_config["AppType"],
+                    "Name": resource_config["Name"],
+                },
+                error=str(e),
+                physicalResourceId=script_arn,
+            )
+            return
 
     cfnresponse.send(
         event,
@@ -111,7 +129,12 @@ def handle_delete(event, context):
     domain_id = resource_config.get("DomainId")
     app_type = resource_config.get("AppType")
     if domain_id is not None and app_type is not None:
-        remove_lcc_from_domain(domain_id=domain_id, script_arn=lcc_id, app_type=app_type)
+        try:
+            remove_lcc_from_domain(domain_id=domain_id, script_arn=lcc_id, app_type=app_type)
+        except:
+            logger.exception(
+                "Failed to detach LCC from domain - trying to delete LCC anyway..."
+            )
 
     try:
         logger.info(f"Deleting lifecycle config script {lcc_name}")

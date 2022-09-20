@@ -24,15 +24,23 @@ While the deep learning exercises above are presented in TensorFlow+Keras by def
 
 ## Deploying in Your Own Account
 
-The recommended way to explore these exercises is to **[onboard to SageMaker Studio](https://docs.aws.amazon.com/sagemaker/latest/dg/gs-studio-onboard.html)**. Once you've done this, you can download this repository by launching a **System terminal** (From the "Utilities and files" section of the launcher screen inside Studio) and running `git clone https://github.com/aws-samples/sagemaker-101-workshop`. If possible we recommend to configure Studio to use JupyterLab v3, and you may also like to install assistive coding tools as described in [this AWS ML blog post](https://aws.amazon.com/blogs/machine-learning/amazon-sagemaker-studio-and-sagemaker-notebook-instance-now-come-with-jupyterlab-3-notebooks-to-boost-developer-productivity/).
+The recommended way to explore these exercises is to **[onboard to SageMaker Studio](https://docs.aws.amazon.com/sagemaker/latest/dg/gs-studio-onboard.html)**. Once you've done this, you can download this repository by launching a **System terminal** (From the "Utilities and files" section of the launcher screen inside Studio) and running `git clone https://github.com/aws-samples/sagemaker-101-workshop`. If possible we recommend to configure Studio to use JupyterLab v3.
 
 If you prefer to use classic [SageMaker Notebook Instances](https://docs.aws.amazon.com/sagemaker/latest/dg/nbi.html), you can find a [CloudFormation template](https://aws.amazon.com/cloudformation/resources/templates/) defining a simple setup at [.simple.cf.yaml](.simple.cf.yaml). This can be deployed via the [AWS CloudFormation Console](https://console.aws.amazon.com/cloudformation/home).
 
-> **Note:** Some of the examples depend on [ipywidgets](@jupyter-widgets/jupyterlab-manager) for interactive inference demos, which should be installed by default in SageMaker Studio but requires additional setup on a classic Notebook Instance. See the CloudFormation template for an example installing the required libraries via Lifecycle Configuration script.
+You can refer to the [*"How Are Amazon SageMaker Studio Notebooks Different from Notebook Instances?"*](https://docs.aws.amazon.com/sagemaker/latest/dg/notebooks-comparison.html) docs page for more details on differences between the Studio and Notebook Instance environments.
 
-Depending on your setup, you may be asked to **choose a kernel** when opening some notebooks. There should be guidance at the top of each notebook on suggested kernel types, but if you can't find any, `Python 3 (Data Science)` (on Studio) or `conda_python3` (on Notebook Instances) are likely good options.
+Depending on your setup, you may be asked to **choose a kernel** when opening some notebooks. There should be guidance at the top of each notebook on suggested kernel types, but if you can't find any, `Data Science 2.0 (Python 3)` (on Studio) or `conda_python3` (on Notebook Instances) are likely good options.
 
-You can refer to the [*"How Are Amazon SageMaker Studio Notebooks Different from Notebook Instances?"*](https://docs.aws.amazon.com/sagemaker/latest/dg/notebooks-comparison.html) docs page for more details on differences between the Studio and Notebook Instance environments. As that page notes, SageMaker studio does not yet support [local mode](https://aws.amazon.com/blogs/machine-learning/use-the-amazon-sagemaker-local-mode-to-train-on-your-notebook-instance/): which we find can be useful to accelerate debugging in the migration challenge.
+### Setting up widgets and code completion (JupyterLab extensions)
+
+Some of the examples depend on [ipywidgets](@jupyter-widgets/jupyterlab-manager) and [ipycanvas](https://ipycanvas.readthedocs.io/en/latest/) for interactive inference demo widgets (but do provide code-only alternatives).
+
+We also usually enable some additional JupyterLab extensions powered by [jupyterlab-lsp](https://github.com/jupyter-lsp/jupyterlab-lsp#readme) and [jupyterlab-s3-browser](https://github.com/IBM/jupyterlab-s3-browser#readme) to improve user experience. You can find more information about these extensions in [this AWS ML blog post](https://aws.amazon.com/blogs/machine-learning/amazon-sagemaker-studio-and-sagemaker-notebook-instance-now-come-with-jupyterlab-3-notebooks-to-boost-developer-productivity/)
+
+`ipywidgets` should be available by default on SageMaker Studio, but usually not on Notebook Instances. The other extensions require installation.
+
+To see how we automate these extra setup steps, you can refer to the **lifecycle configuration scripts** in our CloudFormation templates. For a [Notebook Instance LCC](https://docs.amazonaws.cn/en_us/sagemaker/latest/dg/notebook-lifecycle-config.html), see the `AWS::SageMaker::NotebookInstanceLifecycleConfig` in [.simple.cf.yaml](.simple.cf.yaml). For a [SageMaker Studio LCC](https://docs.amazonaws.cn/en_us/sagemaker/latest/dg/studio-lcc-create.html), see the `Custom::StudioLifecycleConfig` in [.infrastructure/template.sam.yaml](.infrastructure/template.sam.yaml).
 
 
 ## Security

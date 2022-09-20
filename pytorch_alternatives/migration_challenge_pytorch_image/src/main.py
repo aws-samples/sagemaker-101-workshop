@@ -135,7 +135,7 @@ class Net(nn.Module):
         x = self.flatten1(self.dropout1(self.max_pool2d(x)))
         x = F.relu(self.fc1(x))
         x = self.fc2(self.dropout2(x))
-        return F.softmax(x)
+        return F.softmax(x, dim=-1)
 
 
 def test(model, testloader, device):
@@ -208,6 +208,7 @@ def model_fn(model_dir):
 
 
 def save_model(model, model_dir):
+    os.makedirs(model_dir, exist_ok=True)
     path = os.path.join(model_dir, "model.pth")
     x = torch.rand((1,1,28,28), dtype= torch.float)
     model = model.cpu()
