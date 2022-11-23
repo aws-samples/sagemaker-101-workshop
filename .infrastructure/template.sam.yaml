@@ -441,12 +441,12 @@ Resources:
       DomainId: !GetAtt StudioDomain.DomainId
       UserProfileName: !GetAtt UserProfile.UserProfileName
 
-  # Pre-warm the default Python 3 (Data Science) kernel to make first exercise start-up faster:
-  SMDataScienceApp:
+  # Pre-warm the Data Science 3.0 kernel to make first exercise start-up faster:
+  SMDataScience3App:
     Type: 'AWS::SageMaker::App'
     DependsOn: UserProfile
     Properties: 
-      AppName: instance-prewarm-datascience-ml-t3-medium
+      AppName: instance-prewarm-datascience3-ml-t3-medium
       AppType: KernelGateway
       DomainId: !GetAtt StudioDomain.DomainId
       ResourceSpec: 
@@ -454,10 +454,10 @@ Resources:
         SageMakerImageArn: !FindInMap
           - RegionMap
           - !Ref 'AWS::Region'
-          - datascience
+          - datascience3
       UserProfileName: !GetAtt UserProfile.UserProfileName
 
-  # ...Also the new Data Science 2.0 kernel in case we want to try out JupyterLab debugger:
+  # ...Also the Data Science 2.0 kernel, for Autopilot exercise:
   SMDataScience2App:
     Type: 'AWS::SageMaker::App'
     DependsOn: UserProfile
