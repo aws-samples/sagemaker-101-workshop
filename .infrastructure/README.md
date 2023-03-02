@@ -62,29 +62,13 @@ make all DEPLOYMENT_BUCKET_NAME=example-bucket STACK_NAME=sm101stack
 
 ...There's also a `make delete` option for cleaning up - but it's basically just a call to delete the CF stack.
 
-## Preparing Templates for Multi-Region Deployment
+## Preparing Templates for Multi-Region or modified deployment
 
 As of now, this SAM build process is pretty region-specific (as it uploads Lambda bundles to a specific S3 bucket and Lambda deployment will fail if that bucket isn't in the same region as the target stack).
 
-It's possible to manually set up a multi-region deployable resource by:
+This sample provides two **post-processing options** for parameterizing asset locations in the final deployable template, to support multi-region deployments or deployments with otherwise relocated assets:
 
-- Including the region in the name of your original deployment bucket (e.g. `example-bucket-us-east-1`)
-- Replicating the contents of this bucket to similarly named buckets in other regions you need to support (e.g. `example-bucket-ap-southeast-1`)
-- Editing the **built** template (i.e. the `.tmp.yaml` file) to replace SAM-generated references to your actual bucket as follows:
+1. Use `sam-postproc.py` if you plan to set up sets of cross-region-replicated buckets with region-parameterized names (like `example-bucket-us-east-1`, `example-bucket-ap-southeast-1`), and have the stack automatically fetch assets from the deployed region's bucket.
+2. Use `sam-indirect.py` if you have a more complex setup, and want to specify your asset bucket and prefix at each deployment time through CloudFormation parameters.
 
-Example:
-
-```yaml
-  # (Or CodeUri...)
-  ContentUri: s3://example-bucket-us-east-1/sam/1234567890abcdef
-```
-
-...becomes:
-
-```yaml
-  # (Or CodeUri...)
-  ContentUri:
-    Bucket:
-      Fn::Sub: 'example-bucket-${AWS::Region}'
-    Key: sam/1234567890abcdef
-```
+The provided `Makefile`'s `build` step uses option (2) by default (to support our own deployment processes), but you can swap or remove it if it's not relevant for your environment.

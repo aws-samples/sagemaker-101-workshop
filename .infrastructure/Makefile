@@ -26,7 +26,10 @@ build: ##=> Build SAM template & assets to CloudFormation on S3
 			--s3-prefix $(DEPLOYMENT_BUCKET_PREFIX)sam \
 			--use-json \
 			--output-template-file template.tmp.json && \
-		python sam-postproc.py template.tmp.json template.tmp.json && \
+		python sam-indirect.py \
+			template.tmp.json \
+			template.tmp.json \
+			--source-s3-prefix $(DEPLOYMENT_BUCKET_PREFIX) && \
 		aws s3 cp template.tmp.json \
 			s3://$(DEPLOYMENT_BUCKET_NAME)/$(DEPLOYMENT_BUCKET_PREFIX)SM101.cf.json
 
