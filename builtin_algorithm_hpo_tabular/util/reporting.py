@@ -198,8 +198,8 @@ def sagemaker_binary_classification_report(
 
     precision, recall, thresholds = metrics.precision_recall_curve(y_real, y_predict_proba)
     f1_scores = 2 * recall * precision / (recall + precision)
-    best_f1 = np.max(f1_scores)
-    f1max_threshold = thresholds[np.argmax(f1_scores)]
+    best_f1 = np.nanmax(f1_scores)
+    f1max_threshold = thresholds[np.nanargmax(f1_scores)]
 
     if y_predict_label is None:
         print("Using inferred F1-maximizing threshold for metrics")
