@@ -20,7 +20,7 @@ Sessions in suggested order:
     - (Optional) Start with [sklearn_reg](custom_script_demos/sklearn_reg) for an introduction if you're new to deep learning but familiar with Scikit-Learn
     - See [huggingface_nlp](custom_script_demos/sklearn_reg) (preferred) for a side-by-side comparison of in-notebook versus on-SageMaker model training and inference for text classification - or alternatively the custom CNN-based [keras_nlp](custom_script_demos/keras_nlp) or [pytorch_nlp](custom_script_demos/pytorch_nlp) examples.
 1. [migration_challenge](migration_challenge): **Apply** what you learned to port an in-notebook workflow to a SageMaker training job + endpoint deployment on your own
-    - Choose the [keras_mnist](migration_challenge/keras_mnist) or [pytorch_mnist](migration_challenge/pytorch_mnist) depending which ML framework you're most comfortable with.
+    - Choose the [sklearn_cls](migration_challenge/sklearn_cls), [keras_mnist](migration_challenge/keras_mnist) or [pytorch_mnist](migration_challenge/pytorch_mnist) challenge, depending which ML framework you're most comfortable with.
 
 
 ## Deploying in Your Own Account
