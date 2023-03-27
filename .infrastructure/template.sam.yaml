@@ -176,7 +176,7 @@ Resources:
               pip install \
                 jupyter-server==$JUPYTERSERVER_VER \
                 ipywidgets==$IPYWIDGETS_VER \
-                ipycanvas
+                'ipycanvas<0.13'
               source /home/ec2-user/anaconda3/bin/deactivate
               EOF
 
@@ -379,7 +379,7 @@ Resources:
               boto3==$BOTO3_VER \
               botocore==$BOTOCORE_VER \
               jupyter-server==$JUPYTERSERVER_VER \
-              ipycanvas
+              'ipycanvas<0.13'
           jlpm add --dev bash-language-server dockerfile-language-server-nodejs
 
           CMP_CONFIG_DIR=.jupyter/lab/user-settings/@krassowski/jupyterlab-lsp/

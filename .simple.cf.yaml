@@ -39,7 +39,7 @@ Resources:
               pip install \
                 jupyter-server==$JUPYTERSERVER_VER \
                 ipywidgets==$IPYWIDGETS_VER \
-                ipycanvas
+                'ipycanvas<0.13'
               source /home/ec2-user/anaconda3/bin/deactivate
               EOF
 
