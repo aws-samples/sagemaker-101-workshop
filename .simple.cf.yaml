@@ -30,17 +30,23 @@ Resources:
               #!/bin/bash
               set -e
 
-              # Install extension for ipywidgets interactivity:
+              # Install extension for interactive canvas drawing:
+              # ipywidgets is already present on al2-v2 NBIs. Pin versions to avoid reinstallations
               sudo -u ec2-user -i <<'EOF'
               source /home/ec2-user/anaconda3/bin/activate JupyterSystemEnv
-              jupyter labextension install @jupyter-widgets/jupyterlab-manager ipycanvas
+              JUPYTERSERVER_VER=`pip show jupyter-server | grep 'Version:' | sed 's/Version: //'`
+              IPYWIDGETS_VER=`pip show ipywidgets | grep 'Version:' | sed 's/Version: //'`
+              pip install \
+                jupyter-server==$JUPYTERSERVER_VER \
+                ipywidgets==$IPYWIDGETS_VER \
+                'ipycanvas<0.13'
               source /home/ec2-user/anaconda3/bin/deactivate
               EOF
 
   NotebookInstance:
     Type: 'AWS::SageMaker::NotebookInstance'
     Properties:
-      InstanceType: ml.t2.medium
+      InstanceType: ml.t3.medium
       LifecycleConfigName: !GetAtt NotebookConfig.NotebookInstanceLifecycleConfigName
       # Otherwise it gets some garbage name by default:
       NotebookInstanceName: !Sub '${AWS::StackName}-Notebook'
