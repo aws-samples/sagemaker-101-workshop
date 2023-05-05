@@ -24,11 +24,20 @@ def lambda_handler(event, context):
         # Local imports *inside* try/catch so any syntax errors or other basic stuff still send a
         # failed cfnresponse instead of just timing out the CFn resource (which takes an hour!)
         import content
+        import smprojects
 
         request_type = event["RequestType"]
         if request_type == "Create":
+            try:
+                smprojects.on_create_update(event)
+            except:
+                logging.exception("Failed to set up user for SageMaker Projects")
             content.handle_create(event, context)
         elif request_type == "Update":
+            try:
+                smprojects.on_create_update(event)
+            except:
+                logging.exception("Failed to set up user for SageMaker Projects")
             content.handle_update(event, context)
         elif request_type == "Delete":
             content.handle_delete(event, context)

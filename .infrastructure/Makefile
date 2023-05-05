@@ -38,7 +38,7 @@ create: ##=> Create services stack (only)
 	aws cloudformation create-stack \
 			--template-body file://template.tmp.json \
 			--stack-name $(STACK_NAME) \
-			--capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
+			--capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
 			--disable-rollback
 			# (disable rollback for debugging)
 			# TODO: Support --parameter-overrides through MAKE?
@@ -48,7 +48,7 @@ deploy: ##=> Deploy services (flexible create or update)
 	sam deploy \
 			--template-file template.tmp.json \
 			--stack-name $(STACK_NAME) \
-			--capabilities CAPABILITY_IAM
+			--capabilities CAPABILITY_NAMED_IAM
 			# TODO: Support --parameter-overrides through MAKE?
 
 all: ##=> Build and create stack

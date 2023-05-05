@@ -44,6 +44,11 @@ def main(args):
     n_edited = 0
     for resname in resources:
         resprops = resources[resname].get("Properties", {})
+        if resources[resname]["Type"] == "AWS::Serverless::Application":
+            raise NotImplementedError(
+                "This post-processor doesn't support AWS::Serverless::Application yet... "
+                "See sam-indirect.py for an example for how it could be done."
+            )
         for asset_attr in ("ContentUri", "CodeUri"):
             if (
                 asset_attr in resprops
