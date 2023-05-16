@@ -41,27 +41,28 @@ def parse_args():
     parser.add_argument("--learning_rate", type=float, default=5e-5)
     parser.add_argument("--warmup_steps", type=int, default=500)
     parser.add_argument("--epochs", type=int, default=3)
+    parser.add_argument("--train_max_steps", type=int, default=-1)
     parser.add_argument("--train_batch_size", type=int, default=32)
     parser.add_argument("--eval_batch_size", type=int, default=64)
     parser.add_argument("--fp16", type=int, default=1)
 
     # Data, model, and output folders are set by combination of CLI args and env vars:
-    parser.add_argument("--train", type=str, default=os.environ["SM_CHANNEL_TRAIN"])
-    parser.add_argument("--test", type=str, default=os.environ["SM_CHANNEL_TEST"])
-    parser.add_argument("--model_dir", type=str, default=os.environ["SM_MODEL_DIR"])
-    parser.add_argument("--output_data_dir", type=str, default=os.environ["SM_OUTPUT_DATA_DIR"])
-    parser.add_argument("--n_gpus", type=str, default=os.environ["SM_NUM_GPUS"])
+    parser.add_argument("--train", type=str, default=os.environ.get("SM_CHANNEL_TRAIN"))
+    parser.add_argument("--test", type=str, default=os.environ.get("SM_CHANNEL_TEST"))
+    parser.add_argument("--model_dir", type=str, default=os.environ.get("SM_MODEL_DIR"))
+    parser.add_argument("--output_data_dir", type=str, default=os.environ.get("SM_OUTPUT_DATA_DIR"))
+    # parser.add_argument("--n_gpus", type=int, default=os.environ.get("SM_NUM_GPUS"))
 
     args, _ = parser.parse_known_args()
     return args
 
 
 def compute_metrics(pred):
-        labels = pred.label_ids
-        preds = pred.predictions.argmax(-1)
-        precision, recall, f1, _ = precision_recall_fscore_support(labels, preds, average="micro")
-        acc = accuracy_score(labels, preds)
-        return {"accuracy": acc, "f1": f1, "precision": precision, "recall": recall}
+    labels = pred.label_ids
+    preds = pred.predictions.argmax(-1)
+    precision, recall, f1, _ = precision_recall_fscore_support(labels, preds, average="micro")
+    acc = accuracy_score(labels, preds)
+    return {"accuracy": acc, "f1": f1, "precision": precision, "recall": recall}
 
 
 def get_model(model_id: str, class_names: List[str]) -> (
@@ -127,6 +128,7 @@ if __name__ == "__main__":
     # Load job parameters:
     args = parse_args()
     training_args = TrainingArguments(
+        max_steps=args.train_max_steps,
         num_train_epochs=args.epochs,
         per_device_train_batch_size=args.train_batch_size,
         per_device_eval_batch_size=args.eval_batch_size,
@@ -175,7 +177,9 @@ if __name__ == "__main__":
     if test_dataset:
         eval_result = trainer.evaluate(eval_dataset=test_dataset)
         # The 'output' folder will also (separately from model) get uploaded to S3 by SageMaker:
-        with open(os.path.join(args.output_data_dir, "eval_results.txt"), "w") as writer:
-            print("***** Eval results *****")
-            for key, value in sorted(eval_result.items()):
-                writer.write(f"{key} = {value}\n")
+        if args.output_data_dir:
+            os.makedirs(args.output_data_dir, exist_ok=True)
+            with open(os.path.join(args.output_data_dir, "eval_results.txt"), "w") as writer:
+                print("***** Eval results *****")
+                for key, value in sorted(eval_result.items()):
+                    writer.write(f"{key} = {value}\n")
