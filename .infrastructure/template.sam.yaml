@@ -162,13 +162,35 @@ Resources:
           -
             Effect: Allow
             Principal:
-              Service: sagemaker.amazonaws.com
+              Service:
+                - glue.amazonaws.com
+                - sagemaker.amazonaws.com
             Action: sts:AssumeRole
       Path: '/'
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
         - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+        - 'arn:aws:iam::aws:policy/service-role/AwsGlueSessionUserRestrictedServiceRole'
         - 'arn:aws:iam::aws:policy/IAMFullAccess'
+      Policies:
+        - PolicyName: GlueInteractiveSessions
+          PolicyDocument: {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Sid": "CodeWhispererPermissions",
+                "Effect": "Allow",
+                "Action": ["codewhisperer:GenerateRecommendations"],
+                "Resource": "*"
+              },
+              {
+                "Sid": "GlueSessionsIAMPerms",
+                "Effect": "Allow",
+                "Action": ["iam:GetRole", "iam:PassRole", "sts:GetCallerIdentity"],
+                "Resource": "*"
+              }
+            ]
+          }
 
   # If running on classic notebook instances, make sure widgets library is installed:
   NotebookConfig:
@@ -404,8 +426,9 @@ Resources:
           BOTOCORE_VER=`pip show botocore | grep 'Version:' | sed 's/Version: //'`
           JUPYTERSERVER_VER=`pip show jupyter-server | grep 'Version:' | sed 's/Version: //'`
 
-          echo "Installing jupyterlab-lsp, language tools, and canvas widget"
-          pip install jupyterlab-lsp \
+          echo "Installing CodeWhisperer, jupyterlab-lsp, language tools, canvas widget"
+          pip install amazon-codewhisperer-jupyterlab-ext \
+              jupyterlab-lsp \
               'python-lsp-server[flake8,mccabe,pycodestyle,pydocstyle,pyflakes,pylint,rope]' \
               jupyterlab-spellchecker \
               jupyterlab-code-formatter black isort \
@@ -415,6 +438,9 @@ Resources:
               jupyter-server==$JUPYTERSERVER_VER \
               'ipycanvas<0.13'
           jlpm add --dev bash-language-server dockerfile-language-server-nodejs
+
+          # CodeWhisperer should be specifically enabled:
+          jupyter server extension enable amazon_codewhisperer_jupyterlab_ext
 
           CMP_CONFIG_DIR=.jupyter/lab/user-settings/@krassowski/jupyterlab-lsp/
           CMP_CONFIG_FILE=completion.jupyterlab-settings
@@ -650,6 +676,11 @@ Resources:
     Type: 'AWS::S3::Bucket'
     Condition: DeployExtras
     Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - BucketKeyEnabled: true
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
       BucketName: !Sub 'sagemaker-${AWS::Region}-${AWS::AccountId}'
       CorsConfiguration:
         CorsRules:
