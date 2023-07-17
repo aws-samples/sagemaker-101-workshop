@@ -437,7 +437,8 @@ Resources:
               botocore==$BOTOCORE_VER \
               jupyter-server==$JUPYTERSERVER_VER \
               'ipycanvas<0.13'
-          jlpm add --dev bash-language-server dockerfile-language-server-nodejs
+          # bash-language-server v5+ requires Node v16+ (not yet available):
+          jlpm add --dev bash-language-server@"<5.0.0" dockerfile-language-server-nodejs
 
           # CodeWhisperer should be specifically enabled:
           jupyter server extension enable amazon_codewhisperer_jupyterlab_ext
