@@ -17,6 +17,17 @@ Parameters:
     Default: https://github.com/aws-samples/sagemaker-101-workshop
     Description: URL of the git code repository to clone in to the SageMaker notebook.
 
+  EnableExtras:
+    Type: String
+    Default: 'yes'
+    Description: >-
+      Set 'yes' to auto-configure SageMaker Service Roles (for SM Projects) and SageMaker Default
+      Bucket CORS (for SM Canvas) in this stack: But stack deployment will fail if these already
+      exist.
+    AllowedValues:
+      - 'yes'
+      - 'no'
+
   VpcId:
     Type: String
     Description: VPC ID to use (e.g. vpc-xxxxxx), or blank to use default.
@@ -27,6 +38,9 @@ Parameters:
     Description: >-
       Comma-separated list of subnet IDs to use (e.g. subnet-xxxxxx), or blank to use all default subnets.
     Default: ''
+
+Conditions:
+  DeployExtras: !Equals [!Ref EnableExtras, 'yes']
 
 Mappings:
   RegionMap:
@@ -148,13 +162,35 @@ Resources:
           -
             Effect: Allow
             Principal:
-              Service: sagemaker.amazonaws.com
+              Service:
+                - glue.amazonaws.com
+                - sagemaker.amazonaws.com
             Action: sts:AssumeRole
       Path: '/'
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
         - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+        - 'arn:aws:iam::aws:policy/service-role/AwsGlueSessionUserRestrictedServiceRole'
         - 'arn:aws:iam::aws:policy/IAMFullAccess'
+      Policies:
+        - PolicyName: GlueInteractiveSessions
+          PolicyDocument: {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Sid": "CodeWhispererPermissions",
+                "Effect": "Allow",
+                "Action": ["codewhisperer:GenerateRecommendations"],
+                "Resource": "*"
+              },
+              {
+                "Sid": "GlueSessionsIAMPerms",
+                "Effect": "Allow",
+                "Action": ["iam:GetRole", "iam:PassRole", "sts:GetCallerIdentity"],
+                "Resource": "*"
+              }
+            ]
+          }
 
   # If running on classic notebook instances, make sure widgets library is installed:
   NotebookConfig:
@@ -260,6 +296,25 @@ Resources:
             Action:
               - iam:PassRole
             Resource: !GetAtt SageMakerExecutionRole.Arn
+          - Sid: GetSageMakerUserRole  # Required on SM role for AssociatePrincipalWithPortfolio
+            Effect: Allow
+            Action:
+              - iam:GetRole
+            Resource:
+              - '*' # TODO: Could scope this down if we were more explicit about SM exec role/path
+          - Sid: SageMakerProjectsPermission  # For enabling SM Projects
+            Effect: Allow
+            Action:
+              - servicecatalog:AcceptPortfolioShare
+              - servicecatalog:AssociatePrincipalWithPortfolio
+              - sagemaker:EnableSagemakerServicecatalogPortfolio
+              - sagemaker:DisableSagemakerServicecatalogPortfolio
+            Resource: '*'
+          - Sid: ServiceCatalogPermission  # TODO: Can this be scoped down? For enabling SM Projects
+            Effect: Allow
+            Action:
+              - servicecatalog:*
+            Resource: '*'
 
   # Permissions for the Lambda functions implementing our custom CFN resources:
   LambdaExecutionRole:
@@ -284,11 +339,11 @@ Resources:
     Properties:
       ContentUri: ./lambda-common/
       CompatibleRuntimes:
+        - python3.10
+        - python3.9
         - python3.8
-        - python3.7
-        - python3.6
     Metadata:
-      BuildMethod: python3.8
+      BuildMethod: python3.10
 
   # Custom resource implementation for creating SMStudio domains
   StudioDomainFunction:
@@ -299,7 +354,7 @@ Resources:
       Handler: main.lambda_handler
       MemorySize: 128
       Role: !GetAtt LambdaExecutionRole.Arn
-      Runtime: python3.8
+      Runtime: python3.10
       Timeout: 900
       Layers:
         - !Ref LambdaCommonLayer
@@ -314,7 +369,7 @@ Resources:
       Handler: main.lambda_handler
       MemorySize: 128
       Role: !GetAtt LambdaExecutionRole.Arn
-      Runtime: python3.8
+      Runtime: python3.10
       Timeout: 900
       Layers:
         - !Ref LambdaCommonLayer
@@ -327,7 +382,7 @@ Resources:
       CodeUri: ./fn-user/
       Handler: main.lambda_handler
       Role: !GetAtt LambdaExecutionRole.Arn
-      Runtime: python3.8
+      Runtime: python3.10
       Timeout: 900
       Layers:
         - !Ref LambdaCommonLayer
@@ -341,6 +396,7 @@ Resources:
       DomainName: 'PoCDomain'
       DefaultUserSettings:
         ExecutionRole: !GetAtt SageMakerExecutionRole.Arn
+      EnableProjects: true
 
   # Install extra assistive coding tools to provide features like autocomplete in Studio:
   StudioLifecycleConfig:
@@ -370,8 +426,9 @@ Resources:
           BOTOCORE_VER=`pip show botocore | grep 'Version:' | sed 's/Version: //'`
           JUPYTERSERVER_VER=`pip show jupyter-server | grep 'Version:' | sed 's/Version: //'`
 
-          echo "Installing jupyterlab-lsp, language tools, and canvas widget"
-          pip install jupyterlab-lsp \
+          echo "Installing CodeWhisperer, jupyterlab-lsp, language tools, canvas widget"
+          pip install amazon-codewhisperer-jupyterlab-ext \
+              jupyterlab-lsp \
               'python-lsp-server[flake8,mccabe,pycodestyle,pydocstyle,pyflakes,pylint,rope]' \
               jupyterlab-spellchecker \
               jupyterlab-code-formatter black isort \
@@ -380,7 +437,11 @@ Resources:
               botocore==$BOTOCORE_VER \
               jupyter-server==$JUPYTERSERVER_VER \
               'ipycanvas<0.13'
-          jlpm add --dev bash-language-server dockerfile-language-server-nodejs
+          # bash-language-server v5+ requires Node v16+ (not yet available):
+          jlpm add --dev bash-language-server@"<5.0.0" dockerfile-language-server-nodejs
+
+          # CodeWhisperer should be specifically enabled:
+          jupyter server extension enable amazon_codewhisperer_jupyterlab_ext
 
           CMP_CONFIG_DIR=.jupyter/lab/user-settings/@krassowski/jupyterlab-lsp/
           CMP_CONFIG_FILE=completion.jupyterlab-settings
@@ -564,7 +625,7 @@ Resources:
       CodeUri: ./fn-usersetup/
       Handler: main.lambda_handler
       Role: !GetAtt LambdaExecutionRole.Arn
-      Runtime: python3.8
+      Runtime: python3.10
       Timeout: 300
       Layers:
         # 3rd party layer to install Git binaries on Lambda function. 
@@ -582,8 +643,10 @@ Resources:
         SubnetIds:
           - !Ref LambdaSubnet
 
-  # Actual resource instantiation: Clone the DefaultCodeRepo into the user's SMStudio EFS home folder:
-  UserGitRepo:
+  # Actual resource instantiation:
+  # - Clone the DefaultCodeRepo into the user's SMStudio EFS home folder
+  # - Enable their access to SageMaker Projects
+  UserSetup:
     Type: 'Custom::SMUserContent'
     DependsOn:
       - UserProfile
@@ -592,8 +655,48 @@ Resources:
       DomainId: !GetAtt StudioDomain.DomainId
       UserProfileName: !GetAtt UserProfile.UserProfileName
       HomeEfsFileSystemUid: !GetAtt UserProfile.HomeEfsFileSystemUid
+      EnableProjects: true
       GitRepository: !Ref DefaultCodeRepo
 
+
+########  OPTIONAL EXTRAS: SERVICE ROLES AND ETC  ########
+## Extra resources set up when `EnableExtras` is turned on
+  # Can only auto-create the various Service Roles required for SM Projects if they don't already
+  # exist in the account:
+  SageMakerServiceRoles:
+    Type: 'AWS::Serverless::Application'
+    Condition: DeployExtras
+    Properties:
+      Location: sagemaker-service-roles.cfn.yaml
+
+  # Creating the SageMaker default bucket CORS configuration enables users to upload local files to
+  # SM Canvas: https://docs.aws.amazon.com/sagemaker/latest/dg/canvas-set-up-local-upload.html
+  # ...But it does mean this template won't work in environments where the SM default bucket has
+  # already been created!
+  SageMakerDefaultBucket:
+    Type: 'AWS::S3::Bucket'
+    Condition: DeployExtras
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - BucketKeyEnabled: true
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      BucketName: !Sub 'sagemaker-${AWS::Region}-${AWS::AccountId}'
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - 'POST'
+            AllowedOrigins:
+              - '*'
+            ExposedHeaders: []
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
 
 Outputs:
   DomainId:

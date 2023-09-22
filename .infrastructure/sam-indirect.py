@@ -63,6 +63,35 @@ def main(args):
     n_edited = 0
     for resname in resources:
         resprops = resources[resname].get("Properties", {})
+        if resources[resname]["Type"] == "AWS::Serverless::Application":
+            # Nested applications use https:// URLs rather than s3:// URIs
+            path = resprops["Location"][len("https://"):].partition("/")[2]
+            bucket, _, key = path.partition("/")
+            # AWS::Serverless::Application doesn't actually support !Sub in the template URL, since
+            # it makes the resource look like a ref to SAM application registry as per this issue:
+            # https://github.com/aws/aws-sam-cli/issues/5111
+            # ...So instead, we'll change the whole resource to a plain CFn Stack:
+            resprops["TemplateURL"] = {
+                "Fn::Sub": "".join((
+                    # (Luckily ***.us-east-1.*** works here, even though it'd normally be omitted)
+                    r"https://s3.${AWS::Region}.amazonaws.com/${",
+                    args.bucket_param_name,
+                    r"}/${",
+                    args.prefix_param_name,
+                    "}",
+                    key[len(args.source_s3_prefix):],
+                ))
+            }
+            resprops.pop("Location", None)
+            resources[resname]["Type"] = "AWS::CloudFormation::Stack"
+            if "Tags" in resprops:
+                # Convert Tags from SAM {key: value} to CFn list format:
+                resprops["Tags"] = [
+                    {"Key": key, "Value": value}
+                    for key, value in resprops["Tags"]
+                ]
+            n_edited += 1
+            print(f" - Transformed nested app {resname} to plain CFn nested stack")
         for asset_attr in ("ContentUri", "CodeUri"):
             if (
                 asset_attr in resprops
