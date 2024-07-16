@@ -15,12 +15,15 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
+# Configure log level & destination for running nicely in SageMaker:
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
-###### Define the model ############
+
 class Net(nn.Module):
+    """Custom PyTorch model definition: A basic 1D CNN for text"""
+
     def __init__(self, vocab_size=400000, emb_dim=300, num_classes=4):
         super(Net, self).__init__()
         self.embedding = nn.Embedding(vocab_size, emb_dim)
@@ -40,9 +43,11 @@ class Net(nn.Module):
         x = self.fc2(x)
         return F.softmax(x, dim=-1)
 
-###### Helper functions ############
+
 class Dataset(torch.utils.data.Dataset):
-    def __init__(self, data, labels):
+    """Custom PyTorch dataset for text classification"""
+
+    def __init__(self, data: np.array, labels: np.array):
         "Initialization"
         self.labels = labels
         self.data = data
@@ -57,19 +62,23 @@ class Dataset(torch.utils.data.Dataset):
         y = torch.as_tensor(self.labels[index])
         return X, y
 
+
 def load_training_data(base_dir):
     X_train = np.load(os.path.join(base_dir, "train_X.npy"))
     y_train = np.load(os.path.join(base_dir, "train_Y.npy"))
     return DataLoader(Dataset(X_train, y_train), batch_size=16)
+
 
 def load_testing_data(base_dir):
     X_test = np.load(os.path.join(base_dir, "test_X.npy"))
     y_test = np.load(os.path.join(base_dir, "test_Y.npy"))
     return DataLoader(Dataset(X_test, y_test), batch_size=1)
 
+
 def load_embeddings(base_dir):
     embedding_matrix = np.load(os.path.join(base_dir, "docs-embedding-matrix.npy"))
     return embedding_matrix
+
 
 def parse_args():
     """Acquire hyperparameters and directory locations passed by SageMaker"""
@@ -90,6 +99,7 @@ def parse_args():
 
     return parser.parse_known_args()
 
+
 def test(model, test_loader, device):
     model.eval()
     test_loss = 0.0
@@ -105,6 +115,7 @@ def test(model, test_loader, device):
 
     test_loss /= len(test_loader.dataset)  # Average loss over dataset samples
     print(f"val_loss: {test_loss:.4f}, val_acc: {correct/len(test_loader.dataset):.4f}")
+
 
 def train(args):
     ###### Load data from input channels ############
@@ -143,6 +154,7 @@ def train(args):
         test(model, test_loader, device)
     save_model(model, args.model_dir, args.max_seq_len)
 
+
 def save_model(model, model_dir, max_seq_len):
     path = os.path.join(model_dir, "model.pth")
     x = torch.randint(0, 10, (1, max_seq_len))
@@ -150,6 +162,7 @@ def save_model(model, model_dir, max_seq_len):
     model.eval()
     m = torch.jit.trace(model, x)
     torch.jit.save(m, path)
+
 
 def model_fn(model_dir):
     """Customized model loading function for inference
