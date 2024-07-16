@@ -51,9 +51,9 @@ def tokenize_and_pad_docs(df, columns, max_length=40):
     docs = df[columns].values
 
     t = torchtext.data.Field(
-      lower       = True,
-      tokenize   = "basic_english",
-      fix_length  = max_length
+      lower = True,
+      tokenize = "basic_english",
+      fix_length = max_length
     )
     docs = list(map(t.preprocess, docs))
     padded_docs = t.pad(docs)
@@ -85,7 +85,9 @@ def get_word_embeddings(t, folder, lang="en"):
         print("Using existing embeddings file")
     else:
         print("Downloading word vectors...")
-        subprocess.run([" ".join(["wget", "-NP", folder, vecs_url])], check=True, shell=True)
+        subprocess.run(
+            [" ".join(["curl", vecs_url, "-o", vecs_gz_filepath])], check=True, shell=True
+        )
 
     print("Loading into memory...")
     embeddings_index = dict()
