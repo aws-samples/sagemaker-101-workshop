@@ -76,6 +76,10 @@ if __name__ == "__main__":
     joblib.dump(model, path)
     print(f"model saved at {path}")
 
+    # BONUS: Evaluate against the test set and print out some metrics:
+    print("Testing model")
+    print(f"Test-Accuracy: {model.score(X_test, y_test):.4%}")
+
 
 # TODO: Function to load the trained model at inference time
 def model_fn(model_dir):
