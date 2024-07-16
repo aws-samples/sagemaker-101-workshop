@@ -671,6 +671,8 @@ Resources:
 
   # Creating the SageMaker default bucket CORS configuration enables users to upload local files to
   # SM Canvas: https://docs.aws.amazon.com/sagemaker/latest/dg/canvas-set-up-local-upload.html
+  # In addition to `POST`, `GET` is required for model quality reports to load in the SM Model
+  # Registry UI.
   # ...But it does mean this template won't work in environments where the SM default bucket has
   # already been created!
   SageMakerDefaultBucket:
@@ -688,6 +690,8 @@ Resources:
           - AllowedHeaders:
               - '*'
             AllowedMethods:
+              - 'GET'
+              - 'HEAD'
               - 'POST'
             AllowedOrigins:
               - '*'
