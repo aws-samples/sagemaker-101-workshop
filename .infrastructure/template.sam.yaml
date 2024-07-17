@@ -394,12 +394,15 @@ Resources:
       VPC: !Ref VpcId
       SubnetIds: !Ref SubnetIds
       DomainName: 'PoCDomain'
+      DomainSettings:
+        DockerSettings:
+          EnableDockerAccess: ENABLED
       DefaultUserSettings:
         ExecutionRole: !GetAtt SageMakerExecutionRole.Arn
       EnableProjects: true
 
-  # Install extra assistive coding tools to provide features like autocomplete in Studio:
-  StudioLifecycleConfig:
+  # Install extra assistive coding tools to provide features like autocomplete in Studio Classic:
+  StudioClassicLifecycleConfig:
     Type: 'Custom::StudioLifecycleConfig'
     Properties:
       ServiceToken: !GetAtt StudioLifecycleConfigFunction.Arn
@@ -478,6 +481,44 @@ Resources:
           nohup supervisorctl -c /etc/supervisor/conf.d/supervisord.conf restart jupyterlabserver \
               > /dev/null 2>&1
 
+  # Install ipycanvas and Docker in Studio JupyterLab
+  StudioJLabLifecycleConfig:
+    Type: 'Custom::StudioLifecycleConfig'
+    Properties:
+      ServiceToken: !GetAtt StudioLifecycleConfigFunction.Arn
+      AppType: JupyterLab
+      DomainId: !GetAtt StudioDomain.DomainId
+      Name: install-docker-ipycanvas
+      Content:
+        Fn::Base64: |
+          #!/bin/bash
+          set -ex
+
+          # As per: https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
+          # Add Docker's official GPG key:
+          sudo apt-get update
+          sudo apt-get -y install ca-certificates curl
+          sudo install -m 0755 -d /etc/apt/keyrings
+          sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+          sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+          # Add the repository to Apt sources:
+          echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+            sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt-get update
+
+          sudo apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+          # SageMaker Python SDK introduced support for Local Mode in Studio at v2.203.0.
+          # MNIST exercises require ipycanvas
+          pip install "ipycanvas<0.13" "sagemaker>=2.203.0,<3"
+
+          echo "Restarting Jupyter server..."
+          nohup supervisorctl -c /etc/supervisor/conf.d/supervisord.conf restart jupyterlabserver \
+              > /dev/null 2>&1
+
   UserProfile:
     Type: 'Custom::UserProfile'
     DependsOn:
@@ -488,6 +529,10 @@ Resources:
       UserProfileName: 'workshop-user'
       UserSettings:
         ExecutionRole: !GetAtt SageMakerExecutionRole.Arn
+        JupyterLabAppSettings:
+          DefaultResourceSpec:
+            InstanceType: ml.t3.medium
+            LifecycleConfigArn: !Ref StudioJLabLifecycleConfig
         # Set JupyterLabv3 default and attach the lifecycle configuration script:
         JupyterServerAppSettings:
           DefaultResourceSpec:
@@ -496,7 +541,7 @@ Resources:
               - !Ref 'AWS::Region'
               - jlabv3
             InstanceType: system
-            LifecycleConfigArn: !Ref StudioLifecycleConfig
+            LifecycleConfigArn: !Ref StudioClassicLifecycleConfig
 
   # Pre-warm the JupyterServer app to make initially opening Studio faster for participants:
   SMJupyterApp:
@@ -517,28 +562,33 @@ Resources:
       AppType: KernelGateway
       DomainId: !GetAtt StudioDomain.DomainId
       ResourceSpec: 
-        InstanceType:  ml.t3.medium
+        InstanceType: ml.t3.medium
         SageMakerImageArn: !FindInMap
           - RegionMap
           - !Ref 'AWS::Region'
           - datascience3
       UserProfileName: !GetAtt UserProfile.UserProfileName
 
-  # ...Also the Data Science 2.0 kernel, for Autopilot exercise:
-  SMDataScience2App:
-    Type: 'AWS::SageMaker::App'
-    DependsOn: UserProfile
-    Properties: 
-      AppName: instance-prewarm-datascience2-ml-t3-medium
-      AppType: KernelGateway
+  # New-Studio JupyterLab Space:
+  PersonalSpace:
+    Type: AWS::SageMaker::Space
+    Properties:
       DomainId: !GetAtt StudioDomain.DomainId
-      ResourceSpec: 
-        InstanceType:  ml.t3.medium
-        SageMakerImageArn: !FindInMap
-          - RegionMap
-          - !Ref 'AWS::Region'
-          - datascience2
-      UserProfileName: !GetAtt UserProfile.UserProfileName
+      OwnershipSettings: 
+        OwnerUserProfileName: !GetAtt UserProfile.UserProfileName
+      SpaceName: !Sub '${UserProfile.UserProfileName}-space'
+      SpaceSettings: 
+        AppType: JupyterLab
+        JupyterLabAppSettings:
+          CodeRepositories:
+            - RepositoryUrl: !Ref DefaultCodeRepo
+          DefaultResourceSpec:
+            InstanceType: ml.t3.medium
+        SpaceStorageSettings:
+          EbsStorageSettings:
+            EbsVolumeSizeInGb: 20
+      SpaceSharingSettings: 
+        SharingType: Private
 
 ########  PRE-CLONING GIT REPO TO SAGEMAKER STUDIO ENVIRONMENT  ########
 ## This is easy on a notebook instance (see above) but requires a few more steps for Studio
@@ -671,6 +721,8 @@ Resources:
 
   # Creating the SageMaker default bucket CORS configuration enables users to upload local files to
   # SM Canvas: https://docs.aws.amazon.com/sagemaker/latest/dg/canvas-set-up-local-upload.html
+  # In addition to `POST`, `GET` is required for model quality reports to load in the SM Model
+  # Registry UI.
   # ...But it does mean this template won't work in environments where the SM default bucket has
   # already been created!
   SageMakerDefaultBucket:
@@ -688,6 +740,8 @@ Resources:
           - AllowedHeaders:
               - '*'
             AllowedMethods:
+              - 'GET'
+              - 'HEAD'
               - 'POST'
             AllowedOrigins:
               - '*'

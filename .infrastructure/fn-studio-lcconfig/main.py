@@ -34,6 +34,9 @@ import traceback
 import boto3
 import cfnresponse
 
+# Local Dependencies
+from sagemaker_util import retry_if_already_updating
+
 logger = getLogger("main")
 ec2 = boto3.client("ec2")
 smclient = boto3.client("sagemaker")
@@ -225,9 +228,11 @@ def attach_lcc_to_domain(domain_id: str, script_arn: str, app_type: str):
     if script_arn not in default_scripts:
         logger.info(f"Adding script to domain:\n{script_arn}")
         default_scripts.append(script_arn)
-        smclient.update_domain(
-            DomainId=domain_id,
-            DefaultUserSettings=default_settings,
+        retry_if_already_updating(
+            lambda: smclient.update_domain(
+                DomainId=domain_id,
+                DefaultUserSettings=default_settings,
+            ),
         )
         time.sleep(10)
     else:
@@ -249,9 +254,11 @@ def remove_lcc_from_domain(domain_id: str, script_arn: str, app_type: str):
     if script_arn in default_scripts:
         logger.info(f"Removing script from domain:\n{script_arn}")
         default_scripts.remove(script_arn)
-        smclient.update_domain(
-            DomainId=domain_id,
-            DefaultUserSettings=default_settings,
+        retry_if_already_updating(
+            lambda: smclient.update_domain(
+                DomainId=domain_id,
+                DefaultUserSettings=default_settings,
+            ),
         )
         time.sleep(5)
     else:

@@ -17,6 +17,7 @@ import boto3
 import cfnresponse
 
 # Local Dependencies:
+from sagemaker_util import retry_if_already_updating
 import vpctools
 
 ec2 = boto3.client("ec2")
@@ -121,9 +122,12 @@ def handle_delete(event, context):
 def handle_update(event, context):
     logging.info("**Received update event")
     domain_id = event["PhysicalResourceId"]
-    default_user_settings = event["ResourceProperties"]["DefaultUserSettings"]
+    update_kwargs = preprocess_update_domain_args(
+        event["ResourceProperties"], event.get("OldResourceProperties")
+    )
+    
     logging.info("**Updating studio domain")
-    update_domain(domain_id, default_user_settings)
+    update_domain(domain_id, **update_kwargs)
 
     if (
         event["ResourceProperties"].get("EnableProjects")
@@ -132,6 +136,8 @@ def handle_update(event, context):
         smclient.enable_sagemaker_servicecatalog_portfolio()
 
     # TODO: Should we wait here for the domain to enter active state again?
+    # TODO: Not returning all data props from Create is messing up some update operations
+    # Not sure if there's a way for us to log/cache the ones that're only visible at create?
     cfnresponse.send(
         event,
         context,
@@ -144,6 +150,8 @@ def handle_update(event, context):
 def preprocess_create_domain_args(config):
     default_user_settings = config["DefaultUserSettings"]
     domain_name = config["DomainName"]
+    default_space_settings = config.get("DefaultSpaceSettings", {})
+    domain_settings = config.get("DomainSettings", {})
     vpc_id = config.get("VPC")
     subnet_ids = config.get("SubnetIds")
     network_mode = config.get("AppNetworkAccessType", "PublicInternetOnly")
@@ -192,14 +200,47 @@ def preprocess_create_domain_args(config):
     elif isinstance(subnet_ids, str):
         subnet_ids = subnet_ids.split(",")
 
+    if default_user_settings.get("ExecutionRole") and not default_space_settings.get("ExecutionRole"):
+        default_space_settings["ExecutionRole"] = default_user_settings["ExecutionRole"]
+    if default_space_settings.get("ExecutionRole") and not default_user_settings.get("ExecutionRole"):
+        default_user_settings["ExecutionRole"] = default_space_settings["ExecutionRole"]
     return {
         "AppNetworkAccessType": network_mode,
         "DomainName": domain_name,
+        "DomainSettings": domain_settings,
         "AuthMode": "IAM",
+        "DefaultSpaceSettings": default_space_settings,
         "DefaultUserSettings": default_user_settings,
         "SubnetIds": subnet_ids,
         "VpcId": vpc_id,
     }
+
+
+def preprocess_update_domain_args(new_props: dict, old_props: dict):
+    update_args = {
+        # TODO: AppSecurityGroupManagement not yet supported for update
+        "DefaultSpaceSettings": new_props.get("DefaultSpaceSettings", {}),
+        "DefaultUserSettings": new_props["DefaultUserSettings"],
+        # TODO: SubnetIds not yet supported for update
+    }
+    if update_args["DefaultUserSettings"].get("ExecutionRole") and not update_args["DefaultSpaceSettings"].get("ExecutionRole"):
+        update_args["DefaultSpaceSettings"]["ExecutionRole"] = update_args["DefaultUserSettings"]["ExecutionRole"]
+    if update_args["DefaultSpaceSettings"].get("ExecutionRole") and not update_args["DefaultUserSettings"].get("ExecutionRole"):
+        update_args["DefaultUserSettings"]["ExecutionRole"] = update_args["DefaultSpaceSettings"]["ExecutionRole"]
+    if "AppNetworkAccessType" in new_props:
+        update_args["AppNetworkAccessType"] = new_props["AppNetworkAccessType"]
+    if "DomainSettings" in new_props:
+        old_settings = old_props.get("DomainSettings", {}) if old_props else {}
+        domain_updates = {}
+        for key, new_value in new_props["DomainSettings"].items():
+            changed = new_value != old_settings.get(key)
+            update_key = "RStudioServerProDomainSettingsForUpdate" if key == "RStudioServerProDomainSettings" else key
+            if changed:
+                domain_updates[update_key] = new_value
+        update_args["DomainSettingsForUpdate"] = domain_updates
+
+    return update_args
+
 
 def post_domain_create(domain_id, enable_projects=False):
     created = False
@@ -253,13 +294,15 @@ def delete_domain(domain_id):
     return response
 
 
-def update_domain(domain_id, default_user_settings):
-    response = smclient.update_domain(
-        DomainId=domain_id,
-        DefaultUserSettings=default_user_settings,
+def update_domain(domain_id: str, **update_domain_kwargs):
+    retry_if_already_updating(
+        lambda: smclient.update_domain(
+            DomainId=domain_id,
+            **update_domain_kwargs
+        ),
     )
     updated = False
-    time.sleep(0.2)
+    time.sleep(0.5)
     while not updated:
         response = smclient.describe_domain(DomainId=domain_id)
         if response["Status"] == "InService":
