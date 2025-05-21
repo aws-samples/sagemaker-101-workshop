@@ -1,10 +1,19 @@
+# Data files (same convention across exercises)
+data/
+**.tmp.*
+
+# Operating systems
 .DS_Store
+
+# JavaScript
+node_modules/
+
+# Python
 .ipynb_checkpoints
 __pycache__
 **.pyc
+.venv/
 
+# CDK & SAM
 .aws-sam
-**.tmp.*
-
-# Data files (same convention across exercises)
-data/
+cdk.out/

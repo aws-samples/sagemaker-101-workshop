@@ -1,0 +1,6 @@
+[project]
+requires-python = ">= 3.9"
+
+[tool.black]
+extend-exclude = "^/(cdk\\.out|setup\\.py)"
+line-length = 100
