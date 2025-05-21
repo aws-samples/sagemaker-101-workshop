@@ -1,0 +1,34 @@
+{
+  "name": "sagemaker-101-workshop",
+  "version": "0.1.0",
+  "description": "CDK infrastructure for Amazon SageMaker 101 workshop",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "cdk:bootstrap": "cdk bootstrap",
+    "deploy": "npm run login:ecrpublic && cdk deploy --all",
+    "destroy": "cdk destroy --all",
+    "lint:cfn": "cfn-lint cfn_bootstrap.yaml",
+    "lint:python": "black ./cdk_src",
+    "lint": "npm run lint:cfn && npm run lint:python",
+    "login:ecrpublic": "aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws",
+    "scan:cfn": "cfn_nag_scan --input-path cfn_bootstrap.yaml",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Workshop",
+    "SageMaker",
+    "AWS"
+  ],
+  "author": "Amazon Web Services",
+  "license": "MIT-0",
+  "private": true,
+  "dependencies": {
+    "aws-cdk": "2.158.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

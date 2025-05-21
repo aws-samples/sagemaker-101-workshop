@@ -25,11 +25,11 @@ Sessions in suggested order:
 
 ## Deploying in Your Own Account
 
-The recommended way to explore these exercises is to **[onboard to SageMaker Studio](https://docs.aws.amazon.com/sagemaker/latest/dg/gs-studio-onboard.html)**. Once you've done this, you can download this repository by launching a **System terminal** (From the "Utilities and files" section of the launcher screen inside Studio) and running `git clone https://github.com/aws-samples/sagemaker-101-workshop`.
+The recommended way to explore these exercises is through Amazon SageMaker AI Studio - and you deploy use the [**template in .infrastructure/cfn_bootstrap.yaml**](.infrastructure/cfn_bootstrap.yaml) from the [AWS CloudFormation Console](https://console.aws.amazon.com/cloudformation/home), to get started with the same environment configuration we use for AWS-guided deliveries of this workshop.
 
-If you prefer to use classic [SageMaker Notebook Instances](https://docs.aws.amazon.com/sagemaker/latest/dg/nbi.html), you can find a [CloudFormation template](https://aws.amazon.com/cloudformation/resources/templates/) defining a simple setup at [.simple.cf.yaml](.simple.cf.yaml). This can be deployed via the [AWS CloudFormation Console](https://console.aws.amazon.com/cloudformation/home).
+> ⚠️ Our `.infrastructure` is optimized for getting started easily with SageMaker Studio, but is not recommended for use in production environments!
 
-You can refer to the [*"How Are Amazon SageMaker Studio Notebooks Different from Notebook Instances?"*](https://docs.aws.amazon.com/sagemaker/latest/dg/notebooks-comparison.html) docs page for more details on differences between the Studio and Notebook Instance environments.
+You can also [read more about how to onboard to SageMaker Studio](https://docs.aws.amazon.com/sagemaker/latest/dg/gs-studio-onboard.html) in the SageMaker AI Developer Guide, and learn [how SageMaker Studio Notebooks are different from Notebook Instances?"*](https://docs.aws.amazon.com/sagemaker/latest/dg/notebooks-comparison.html). A more basic Notebook Instance-based CloudFormation stack is also available in [.simple.cf.yaml](.simple.cf.yaml), but some features of the labs will not be available.
 
 Depending on your setup, you may be asked to **choose a kernel** when opening some notebooks. There should be guidance at the top of each notebook on suggested kernel types, but if you can't find any, `Data Science 3.0 (Python 3)` (on Studio) or `conda_python3` (on Notebook Instances) are likely good options.
 

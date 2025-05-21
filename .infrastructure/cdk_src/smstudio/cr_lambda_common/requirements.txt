@@ -1,0 +1,5 @@
+# Studio user settings incl `StudioWebPortal` (for domain `force_studio_classic`) and
+# `JupyterLabAppSettings` (for user) require an upgrade to the Lambda default versions of boto3 /
+# botocore:
+boto3>=1.34.33
+botocore>=1.34.33

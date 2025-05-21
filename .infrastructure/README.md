@@ -1,74 +1,124 @@
-# Infrastructure for SageMaker Workshop with SageMaker Studio
+# Workshop infrastructure
 
-While the standard CloudFormation template for this example uses [SageMaker Notebook Instances](https://docs.aws.amazon.com/sagemaker/latest/dg/nbi.html), some users may wish to use the newer and more advanced, integrated [SageMaker Studio](https://docs.aws.amazon.com/sagemaker/latest/dg/studio.html) UI instead.
+This project provides infrastructure-as-code to deploy an [Amazon SageMaker Studio Domain](https://docs.aws.amazon.com/sagemaker/latest/dg/sm-domain.html) pre-configured ready to use in a guided workshop setting (in case you don't have one already).
 
-This presents a little more of a challenge to set up, because:
 
-1. SageMaker Studio has a broader scope including user management and SSO integration, so there's a little more [first time setup](https://docs.aws.amazon.com/sagemaker/latest/dg/gs-studio-onboard.html) required.
-2. At the time of writing, some of these constructs don't have native CloudFormation integrations - instead we use solutions [as explained in this blog post](https://aws.amazon.com/blogs/machine-learning/creating-amazon-sagemaker-studio-domains-and-user-profiles-using-aws-cloudformation/) to create the same resources via Lambda functions.
+## Architecture overview
 
-Here we provide a template which will stand up the resources for a workshop in SageMaker Studio.
+The above infrastructure, and the optional SageMaker Studio Domain deployment, is implemented in and deployed through [AWS CDK for Python](https://aws.amazon.com/cdk/). Since deploying CDK code requires setting up a development environment (as detailed below), we also provide a directly-deployable ["bootstrap" CloudFormation template](cfn_bootstrap.yaml) which fetches this repository and runs the CDK deploment via [AWS CodeBuild](https://aws.amazon.com/codebuild/).
 
-## Prerequisites and Caveats
+> ⚠️ **Note:** The above CloudFormation template creates an AWS CodeBuild Project with broad IAM permissions to deploy the solution on your behalf. It's not recommended for use in production-environments where [least-privilege principles](https://aws.amazon.com/blogs/security/techniques-for-writing-least-privilege-iam-policies/) should be followed.
 
-This stack **assumes that (in your target AWS Region)**:
+For a detailed list of other security configurations you might want to optimize before using the stack in prodution, you can enable [cdk-nag](https://github.com/cdklabs/cdk-nag) by running the build with the `CDK_NAG=true` environment variable or editing the defaults in [cdk_app.py](cdk_app.py). You don't need to request stack deployment to complete this analysis: running `npx cdk synth` would show the same error list.
 
-- You have not yet onboarded to SageMaker Studio
-- You have a default VPC you're willing to use with standard configuration, or else would like to use a custom VPC but are comfortable checking the compatibility of the stack with your VPC configuration.
 
-> ⚠️ This stack is oriented towards convenience of **getting started** and first exploring SageMaker Studio. It is **not recommended for long-lived environments**.
->
-> In particular, **be aware that:**
->
-> - When you delete the stack, the SageMaker Studio setup for your target AWS Region will be deleted which will result in **permanent deletion of user data** that might have been stored.
-> - For this reason, the stack is deliberately designed to *fail* to delete if you still have any users with running 'apps' in Studio (which you can manage and terminate e.g. through the [SageMaker console UI](https://console.aws.amazon.com/sagemaker/home?#/studio)).
+## Development environment pre-requisites
 
-...If these prerequisites are not true and you've already onboarded to SageMaker Studio - you can just `git clone` this repository into your Studio environment and start working through the exercises!
+To customize and deploy from source code, you'll need:
 
-## Developing and Deploying Locally
+- [NodeJS](https://nodejs.org/en) installed
+    - The minimum required version is specified in [package.json](package.json) `engines` field and the canonical development version is specified in [.nvmrc](.nvmrc)
+    - If you work across multiple projects and need to manage multiple parallel versions of NodeJS on your system, you may want to install it via [NVM](https://github.com/nvm-sh/nvm) or [NVM-Windows](https://github.com/coreybutler/nvm-windows)
+- [Python](https://www.python.org/)
+    - The minimum required version is specified in [pyproject.toml](pyproject.toml) and the canonical development version is specified in [.python-version](.python-version)
+    - If you work across multiple projects and need to manage multiple parallel versions of Python on your system, you may want to install it via [pyenv](https://github.com/pyenv/pyenv) or [pyenv for Windows](https://github.com/pyenv-win/pyenv-win)
+- The [AWS CLI](https://aws.amazon.com/cli/) installed and [configured / logged in](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) with access to your AWS Account
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or a suitable alternative) installed for building (and maybe locally testing?) container images.
 
-In addition to having an AWS Account (of course), you'll need an environment with:
 
-- The [AWS CLI](https://aws.amazon.com/cli/)
-- The [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
-- A Docker-compatible container runtime such as [Docker Desktop](https://www.docker.com/products/docker-desktop)
-- A `make` utility such as [GNU Make](https://www.gnu.org/software/make/) - probably already installed if you have some bundled build tools already.
-- Honestly? Probably a UNIX-like (non-Windows) shell if you want things to run smoothly... But if not can always give it a try and resort to translating commands from the [Makefile](Makefile) if things go wrong.
+## Getting started
 
-You'll also need:
+The following commands assume you're working in a terminal from the same directory as this README.
 
-- Sufficient access (log in with `aws configure`) to be able to deploy the stacks in your target region
-- An *[Amazon S3](https://s3.console.aws.amazon.com/s3/home) Bucket* to use for staging deployment assets (Lambda bundles, etc)
+These examples use `$` to indicate the prompt of a Bash/POSIX-like shell (e.g. on macOS or Linux), and `%` to indicate a Windows-like shell. You only need to type the commands **after** the prompt!
 
-**Step 1: Build the Lambda bundles and final CloudFormation template with AWS SAM**
+### Install & activate
+
+If you haven't already, consider setting your `AWS_REGION` and `AWS_DEFAULT_REGION` environment variables to your target AWS Region for deployment:
 
 ```sh
-make build DEPLOYMENT_BUCKET_NAME=example-bucket
+$ export AWS_REGION="us-west-2"
+$ export AWS_DEFAULT_REGION="us-west-2"
 ```
 
-**Step 2: Deploy (create or update) the stack**
+**IF** you're using NVM and/or pyenv, first activate the target versions of NodeJS and/or Python:
 
 ```sh
-make deploy STACK_NAME=sm101stack
+$ nvm use  # Should discover version from .nvmrc file
+$ pyenv local  # Should discover version from .python-version file
 ```
 
-***Alternative: Build and create the stack in one go**
-
-(This option only *creates* stacks, and disables rollback, for easier debugging)
+Install the [CDK Toolkit CLI](https://docs.aws.amazon.com/cdk/v2/guide/cli.html) and any other NodeJS dependencies from [package.json](package.json) **locally** in the project:
 
 ```sh
-make all DEPLOYMENT_BUCKET_NAME=example-bucket STACK_NAME=sm101stack
+$ npm install  # Will enable locally-versioned `npx cdk deploy` rather than global `cdk` CLI
 ```
 
-...There's also a `make delete` option for cleaning up - but it's basically just a call to delete the CF stack.
+The initialization process [should *automatically* create](https://docs.aws.amazon.com/cdk/v2/guide/work-with-cdk-python.html) a Python virtualenv when you first run e.g. `npx cdk synth`, if you have the `virtualenv` package installed - but if you prefer to create one manually you can run:
 
-## Preparing Templates for Multi-Region or modified deployment
+```sh
+$ python3 -m venv .venv
+```
 
-As of now, this SAM build process is pretty region-specific (as it uploads Lambda bundles to a specific S3 bucket and Lambda deployment will fail if that bucket isn't in the same region as the target stack).
+After the init process completes and the virtualenv is created, you can use the following
+step to activate your virtualenv (from Bash/POSIX-like shells):
 
-This sample provides two **post-processing options** for parameterizing asset locations in the final deployable template, to support multi-region deployments or deployments with otherwise relocated assets:
+```sh
+$ source .venv/bin/activate
+```
 
-1. Use `sam-postproc.py` if you plan to set up sets of cross-region-replicated buckets with region-parameterized names (like `example-bucket-us-east-1`, `example-bucket-ap-southeast-1`), and have the stack automatically fetch assets from the deployed region's bucket.
-2. Use `sam-indirect.py` if you have a more complex setup, and want to specify your asset bucket and prefix at each deployment time through CloudFormation parameters.
+If you are a Windows platform, you would activate the virtualenv like this:
 
-The provided `Makefile`'s `build` step uses option (2) by default (to support our own deployment processes), but you can swap or remove it if it's not relevant for your environment.
+```
+% .venv\Scripts\activate.bat
+```
+
+Once the virtualenv is activated, you can install the required dependencies.
+
+```
+(.venv) $ pip install -r requirements.txt
+```
+
+(If you need to add any dependencies, simply add them to your requirements.txt and re-run this installation in your Python virtual environment)
+
+
+### Synthesizing and deploying with CDK
+
+Once your AWS CLI is configured, virtual environment activated and dependencies installed, you should be able to use the CDK application. If you haven't already deployed CDK-based infrastructure in your AWS Account & Region, first [bootstrap](https://docs.aws.amazon.com/cdk/v2/guide/cli.html#cli-bootstrap) your environment by running:
+
+```sh
+$ npm run cdk:bootstrap
+```
+
+Then, you should be able to directly synthesize and deploy this project by running:
+
+```sh
+$ npm run deploy
+
+# Or optionally to suppress approval prompts:
+$ npm run deploy -- --require-approval never
+```
+
+To delete your deployed stacks, you can run:
+
+```sh
+$ npm run destroy
+
+# Or optionally to suppress approval prompts:
+$ npm run destroy -- --force
+```
+
+The NPM `deploy` script (and others) are defined in the `scripts` field of [package.json](package.json) and run inside NPM context so have access to the locally-installed version of the `cdk` CLI. The `--` separates arguments for NPM from those that should be passed through to the underlying script. The `app` field of [cdk.json](cdk.json) defines the entry-point command for `cdk` commands.
+
+You can also run CDK commands directly via [npx](https://docs.npmjs.com/cli/v7/commands/npx) if you prefer - for example to **just synthesize** the CloudFormation template(s) instead of also deploying them:
+
+```sh
+$ npx cdk synth --all  # Note no extra '--' required here
+```
+
+See the [CDK Toolkit CLI docs](https://docs.aws.amazon.com/cdk/v2/guide/cli.html) for other useful commands you can run (but add the `npx` prefix!).
+
+
+## Re-configuring the stack
+
+[cdk_app.py](cdk_app.py) accepts some configuration parameters as environment variables. [cfn_bootstrap.yaml](cfn_bootstrap.yaml) uses these same environment variables to pass CloudFormation stack parameters through to the CDK build & deployment process.
