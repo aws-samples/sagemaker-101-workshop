@@ -149,7 +149,7 @@ Resources:
                     fi
                   fi
                 # Actual deploy/destroy instructions for this repository:
-                - cd infra
+                - cd .infrastructure
                 - npm install
                 - pip3 install -r requirements.txt
                 - npm run cdk:bootstrap
